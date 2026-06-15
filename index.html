@@ -144,7 +144,6 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
 <nav><div class="tabs" id="tabs">
   <button class="tab active" data-v="geral">Visão Geral</button>
   <button class="tab" data-v="estoque">Estoque <span class="pill" id="t-estoque">0</span></button>
-  <button class="tab" data-v="fornecedor">Compra por Fornecedor</button>
   <button class="tab crit" data-v="compra">Atenção — Compra <span class="pill" id="t-compra">0</span></button>
   <button class="tab" data-v="venda">Atenção — Venda <span class="pill" id="t-venda">0</span></button>
 </div></nav>
@@ -181,14 +180,6 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
       <button class="btn" id="btn-csv">⬇ Exportar CSV</button>
     </div>
     <div class="panel"><div class="panel-b tall" id="tbl-estoque"></div></div>
-  </section>
-
-  <!-- ============ FORNECEDOR ============ -->
-  <section class="view" id="v-fornecedor">
-    <h2 class="sec"><span class="dot"></span>Fornecedores / marcas</h2>
-    <p class="sub">Quadro por fornecedor (marca): itens em linha e quantos precisam de atenção de compra. Verde = tem produto abaixo do ponto ou marcado para gerar pedido.</p>
-    <div class="kpis" id="kpis-forn"></div>
-    <div class="forn-grid" id="forn-grid"></div>
   </section>
 
   <!-- ============ ATENÇÃO COMPRA ============ -->
@@ -249,21 +240,9 @@ const semTabela  = D.filter(isSemTabela);
 const abaixoPonto= D.filter(isAbaixoPonto);
 const curvaDalto = D.filter(r=>r.abc==='D'&&r.giro>GIRO_ALTO);
 
-// fornecedores (marca)
-const fornMap = {};
-D.forEach(r=>{
-  const k=r.nome;
-  if(!fornMap[k]) fornMap[k]={nome:k,cod:r.codForn,itens:0,abaixo:0,zerados:0,gera:0,semtab:0,freq:r.semMensal==='S'?'Semanal':'Mensal',dia:r.diaSemana};
-  const f=fornMap[k];
-  f.itens++; if(isAbaixoPonto(r))f.abaixo++; if(isZeradoLinha(r))f.zerados++; if(isGeraPedido(r))f.gera++; if(isSemTabela(r))f.semtab++;
-});
-const fAconselha = f => (f.abaixo>0 || f.gera>0);
-const forns = Object.values(fornMap).sort((a,b)=> (b.abaixo+b.gera)-(a.abaixo+a.gera) || a.nome.localeCompare(b.nome));
-const fornAconselhados = forns.filter(fAconselha);
-
 // ---- header meta ----
 document.getElementById('m-skus').textContent = D.length;
-document.getElementById('m-forn').textContent = forns.length;
+document.getElementById('m-forn').textContent = new Set(D.map(r=>r.nome)).size;
 const dataGer = "12/06/2026 14:22";
 document.getElementById('m-data').textContent = dataGer;
 document.getElementById('foot-data').textContent = 'Gerado em '+dataGer;
@@ -275,7 +254,6 @@ document.getElementById('t-venda').textContent = altoGiro.length;
 const qcards = [
   {cls:'red',  val:lowStock.length,  lbl:'Estoque baixo e SEM pedido', hint:'Abaixo do ponto de pedido e nada programado pra chegar', go:()=>gotoPanel('compra','pan-baixo')},
   {cls:'red',  val:zerados.length,   lbl:'Em linha e zerados',          hint:'Produto "Em Uso" com saldo 0', go:()=>gotoPanel('compra','pan-zero')},
-  {cls:'green',val:fornAconselhados.length, lbl:'Fornecedores p/ pedir', hint:'Com itens abaixo do ponto ou marcados p/ pedido', go:()=>gotoPanel('fornecedor','forn-grid')},
   {cls:'amber',val:altoGiro.length,  lbl:'Estoque alto', hint:'Mais de '+GIRO_ALTO+' dias de estoque', go:()=>gotoPanel('venda','pan-alto')},
   {cls:'amber',val:slowMovers.length,lbl:'Pouca qtd, muitos dias', hint:'≤ '+POUCA_CX+' cx mas giro lento', go:()=>gotoPanel('venda','pan-slow')},
 ];
@@ -378,27 +356,6 @@ document.getElementById('btn-csv').onclick=()=>{
   const blob=new Blob(["﻿"+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='estoque_por_marca.csv';a.click();
 };
-
-// ===== FORNECEDOR =====
-document.getElementById('kpis-forn').innerHTML=[
-  {lbl:'Fornecedores / marcas',val:forns.length},
-  {lbl:'Aconselhados a pedir',val:fornAconselhados.length,cls:'green'},
-  {lbl:'Sem necessidade agora',val:forns.length-fornAconselhados.length},
-].map(c=>`<div class="kpi ${c.cls||''}"><div class="lbl">${c.lbl}</div><div class="val" style="font-size:24px">${c.val}</div></div>`).join('');
-document.getElementById('forn-grid').innerHTML=forns.map(f=>{
-  const go=fAconselha(f);
-  return `<div class="forn-card ${go?'go':'no'}">
-    <h3>${esc(f.nome)}</h3>
-    <div class="tag">Cód. ${esc(f.cod)} • ${f.itens} itens • ${f.freq}${f.dia?' ('+esc(f.dia)+')':''}</div>
-    <div class="big">${f.abaixo}</div>
-    <div class="tag">itens abaixo do ponto de pedido</div>
-    <div class="forn-meta">
-      <span>Zerados: <b>${f.zerados}</b></span>
-      <span>Geram pedido: <b>${f.gera}</b></span>
-      <span>Sem tabela: <b>${f.semtab}</b></span>
-    </div>
-    <span class="forn-flag ${go?'flag-go':'flag-no'}">${go?'✅ Aconselhado pedir':'Sem necessidade agora'}</span>
-  </div>`;}).join('');
 
 // ===== PAINÉIS ATENÇÃO (colunas-padrão + ordenados por marca) =====
 function buildPanel(id,icon,iccls,title,arr){
