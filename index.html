@@ -67,8 +67,13 @@ h2.sec .dot{width:9px;height:9px;border-radius:50%;background:var(--azul)}
 .panel-b.tall{max-height:620px}
 /* TABLE */
 table{width:100%;border-collapse:collapse;font-size:12.7px;table-layout:auto}
-thead th{position:sticky;top:0;background:#10141f;color:var(--muted);text-align:left;padding:9px 12px;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none;white-space:nowrap;z-index:2}
-thead th.sortable:hover{color:var(--azul-light)}
+thead th{position:sticky;top:0;background:#10141f;color:var(--muted);text-align:left;padding:9px 12px;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--line);user-select:none;white-space:nowrap;vertical-align:top;z-index:2}
+.th-lbl{cursor:pointer;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.th-lbl:hover{color:var(--azul-light)}
+.th-filter{margin-top:6px;font-weight:400;text-transform:none;letter-spacing:0}
+.th-filter input,.th-filter select{width:100%;min-width:0;max-width:100%;padding:3px 5px;font-size:11px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--txt)}
+.th-filter input::placeholder{color:var(--muted)}
+.th-filter.empty-cell{visibility:hidden}
 thead th .arr{opacity:.5;font-size:10px}
 tbody td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top}
 tbody tr:hover{background:var(--card-2)}
@@ -77,7 +82,7 @@ td.desc{white-space:normal;min-width:170px;font-weight:600;color:var(--txt)}
 td.marca{white-space:normal;max-width:160px;color:var(--muted);font-size:11.3px}
 td.code{font-family:"Consolas",monospace;font-size:11.5px;color:var(--azul-light);font-weight:600;white-space:nowrap}
 /* GRUPO (marca) */
-tr.grp td{background:#0f1422;border-top:2px solid var(--azul);padding:8px 12px;position:sticky;top:33px;z-index:1}
+tr.grp td{background:#0f1422;border-top:2px solid var(--azul);padding:8px 12px}
 tr.grp .grp-name{font-weight:800;color:var(--azul-light);font-size:12.5px}
 tr.grp .grp-meta{color:var(--muted);font-size:11.5px;margin-left:8px}
 .badge{display:inline-block;padding:1px 8px;border-radius:20px;font-size:11px;font-weight:700}
@@ -166,15 +171,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
     <div class="toolbar">
       <input type="search" id="q-estoque" placeholder="🔎 Buscar produto, código, descrição ou marca...">
       <select id="f-forn"><option value="">Todas as marcas (fornecedores)</option></select>
-      <select id="f-abc"><option value="">Curva ABC: todas</option><option>A</option><option>B</option><option>C</option><option>D</option></select>
-      <select id="f-sit">
-        <option value="">Situação: todas</option>
-        <option value="zerado">Zerados</option>
-        <option value="baixo">Abaixo do ponto de pedido</option>
-        <option value="alto">Estoque alto (saldo &gt; 90 dias)</option>
-        <option value="pedir">Geram pedido</option>
-        <option value="semtab">Sem tabela de preço</option>
-      </select>
+      <button class="btn" id="btn-clear">✕ Limpar filtros</button>
       <span class="spacer"></span>
       <span class="tag" id="cnt-estoque"></span>
       <button class="btn" id="btn-csv">⬇ Exportar CSV</button>
@@ -300,58 +297,82 @@ function statusBadge(r){
   return '<span class="badge b-grey">OK</span>';
 }
 const COLS = [
-  {k:'produto',t:'Código',cls:'code'},
-  {k:'descricao',t:'Produto',cls:'desc'},
-  {k:'abc',t:'ABC',render:r=>abcBadge(r.abc)},
-  {k:'saldoAtual',t:'Saldo (un)',num:1,render:r=>fmt(r.saldoAtual)},
-  {k:'saldoAtualCx',t:'Saldo (cx)',num:1,render:r=>fmt1(r.saldoAtualCx)},
-  {k:'giro',t:'Saldo (dias)',num:1,render:r=>giroCell(r.giro)},
-  {k:'__v30',t:'Vende/30 dias',num:1,render:r=>fmt(r.__v30)},
-  {k:'pontoPedido',t:'Ponto ped.',num:1,render:r=>fmt(r.pontoPedido)},
-  {k:'qtdeEntrada',t:'Chegando',num:1,render:r=>fmt(r.qtdeEntrada)},
-  {k:'ultPrcCompra',t:'Últ. preço compra',num:1,render:r=>'R$ '+fmt1(r.ultPrcCompra)},
-  {k:'status',t:'Situação',render:r=>statusBadge(r)},
+  {k:'produto',t:'Código',cls:'code',ft:'text'},
+  {k:'descricao',t:'Produto',cls:'desc',ft:'text'},
+  {k:'abc',t:'ABC',render:r=>abcBadge(r.abc),ft:'select',opts:['A','B','C','D']},
+  {k:'saldoAtual',t:'Saldo (un)',num:1,render:r=>fmt(r.saldoAtual),ft:'min'},
+  {k:'saldoAtualCx',t:'Saldo (cx)',num:1,render:r=>fmt1(r.saldoAtualCx),ft:'min'},
+  {k:'giro',t:'Saldo (dias)',num:1,render:r=>giroCell(r.giro),ft:'min'},
+  {k:'__v30',t:'Vende/30 dias',num:1,render:r=>fmt(r.__v30),ft:'min'},
+  {k:'qtdeEntrada',t:'Chegando',num:1,render:r=>fmt(r.qtdeEntrada),ft:'temnao'},
+  {k:'status',t:'Situação',render:r=>statusBadge(r),ft:'sit'},
 ];
-let sortK='descricao',sortDir=1;
-function filtered(){
-  const q=document.getElementById('q-estoque').value.toLowerCase().trim();
-  const ff=fSel.value, fa=document.getElementById('f-abc').value, fs=document.getElementById('f-sit').value;
-  return D.filter(r=>{
-    if(ff && r.nome!==ff) return false;
-    if(fa && r.abc!==fa) return false;
-    if(fs==='zerado' && !isZeradoLinha(r)) return false;
-    if(fs==='baixo' && !isAbaixoPonto(r)) return false;
-    if(fs==='alto' && !isAltoGiro(r)) return false;
-    if(fs==='pedir' && !isGeraPedido(r)) return false;
-    if(fs==='semtab' && !isSemTabela(r)) return false;
-    if(q && !(r.produto.toLowerCase().includes(q)||r.descricao.toLowerCase().includes(q)||r.nome.toLowerCase().includes(q))) return false;
-    return true;
-  });
+const colByKey=Object.fromEntries(COLS.map(c=>[c.k,c]));
+// opções do filtro de Situação (mesma régua dos badges)
+const SIT_OPTS=[['zerado','Zerado',isZeradoLinha],['baixosp','Baixo s/ pedido',isBaixoSemPedido],['semtab','Sem tabela',isSemTabela],['gera','Gera pedido',isGeraPedido],['alto','Estoque alto',isAltoGiro],['abaixo','Abaixo do ponto',isAbaixoPonto]];
+let colFilters={};
+let sortK='giro',sortDir=-1;   // ordem padrão: por marca e, dentro da marca, por saldo em dias (maior primeiro)
+
+function filterControl(c){
+  if(c.ft==='text')   return `<input type="text" data-k="${c.k}" placeholder="filtrar…">`;
+  if(c.ft==='min')    return `<input type="number" data-k="${c.k}" placeholder="≥ mín">`;
+  if(c.ft==='select') return `<select data-k="${c.k}"><option value="">Todas</option>${c.opts.map(o=>`<option value="${o}">${o}</option>`).join('')}</select>`;
+  if(c.ft==='temnao') return `<select data-k="${c.k}"><option value="">Todos</option><option value="sim">Tem</option><option value="nao">Não tem</option></select>`;
+  if(c.ft==='sit')    return `<select data-k="${c.k}"><option value="">Todas</option>${SIT_OPTS.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('')}</select>`;
+  return `<span class="th-filter empty-cell"></span>`;
 }
 function sortFn(a,b){let x=a[sortK],y=b[sortK];if(typeof x==='string'){return x.localeCompare(y)*sortDir;}return ((x||0)-(y||0))*sortDir;}
+function passesFilters(r){
+  const q=document.getElementById('q-estoque').value.toLowerCase().trim();
+  const ff=fSel.value;
+  if(ff && r.nome!==ff) return false;
+  if(q && !(r.produto.toLowerCase().includes(q)||r.descricao.toLowerCase().includes(q)||r.nome.toLowerCase().includes(q))) return false;
+  for(const k in colFilters){
+    const v=colFilters[k], c=colByKey[k]; if(!v) continue;
+    if(c.ft==='text'){ if(!String(r[k]??'').toLowerCase().includes(v.toLowerCase())) return false; }
+    else if(c.ft==='select'){ if(r[k]!==v) return false; }
+    else if(c.ft==='min'){ const m=parseFloat((''+v).replace(',','.')); if(!isNaN(m) && (r[k]||0) < m) return false; }
+    else if(c.ft==='temnao'){ if(v==='sim' && !((r[k]||0)>0)) return false; if(v==='nao' && ((r[k]||0)>0)) return false; }
+    else if(c.ft==='sit'){ const o=SIT_OPTS.find(x=>x[0]===v); if(o && !o[2](r)) return false; }
+  }
+  return true;
+}
+function filtered(){ return D.filter(passesFilters); }
+function buildEstoqueShell(){
+  const head='<table><thead><tr>'+COLS.map(c=>
+    `<th class="${c.num?'num':''}"><div class="th-lbl" data-k="${c.k}">${c.t} <span class="arr" data-arr="${c.k}">↕</span></div><div class="th-filter">${filterControl(c)}</div></th>`
+  ).join('')+'</tr></thead><tbody id="est-body"></tbody></table>';
+  const box=document.getElementById('tbl-estoque'); box.innerHTML=head;
+  box.querySelectorAll('.th-lbl').forEach(el=>el.onclick=()=>{const k=el.dataset.k;if(sortK===k)sortDir*=-1;else{sortK=k;sortDir=1;}renderEstoque();});
+  box.querySelectorAll('.th-filter input,.th-filter select').forEach(el=>el.addEventListener('input',()=>{
+    const k=el.dataset.k, v=el.value; if(v==='') delete colFilters[k]; else colFilters[k]=v; renderEstoque();
+  }));
+}
 function renderEstoque(){
+  COLS.forEach(c=>{const a=document.querySelector(`.arr[data-arr="${c.k}"]`);if(a)a.textContent=sortK===c.k?(sortDir>0?'▲':'▼'):'↕';});
   const rows=filtered();
   document.getElementById('cnt-estoque').textContent=rows.length+' de '+D.length+' produtos';
   const groups={};
   rows.forEach(r=>{(groups[r.nome]=groups[r.nome]||[]).push(r);});
   const names=Object.keys(groups).sort((a,b)=>a.localeCompare(b));
-  let h='<table><thead><tr>'+COLS.map(c=>`<th class="sortable ${c.num?'num':''}" data-k="${c.k}">${c.t} <span class="arr">${sortK===c.k?(sortDir>0?'▲':'▼'):'↕'}</span></th>`).join('')+'</tr></thead><tbody>';
-  if(!rows.length) h+=`<tr><td colspan="${COLS.length}"><div class="empty">Nada encontrado.</div></td></tr>`;
+  let h='';
+  if(!rows.length) h=`<tr><td colspan="${COLS.length}"><div class="empty">Nada encontrado.</div></td></tr>`;
   names.forEach(nm=>{
     const g=groups[nm].slice().sort(sortFn);
     h+=`<tr class="grp"><td colspan="${COLS.length}"><span class="grp-name">📦 ${esc(nm)}</span><span class="grp-meta">${g.length} ${g.length>1?'itens':'item'}</span></td></tr>`;
     g.forEach(r=>{h+=`<tr onclick='openModal("${r.produto}")' style="cursor:pointer">`+COLS.map(c=>`<td class="${c.cls||''} ${c.num?'num':''}">${c.render?c.render(r):esc(r[c.k])}</td>`).join('')+'</tr>';});
   });
-  h+='</tbody></table>';
-  const box=document.getElementById('tbl-estoque'); box.innerHTML=h;
-  box.querySelectorAll('th.sortable').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(sortK===k)sortDir*=-1;else{sortK=k;sortDir=1;}renderEstoque();});
+  document.getElementById('est-body').innerHTML=h;
 }
-['q-estoque','f-forn','f-abc','f-sit'].forEach(id=>document.getElementById(id).addEventListener('input',renderEstoque));
-function goCurva(c){document.getElementById('f-abc').value=c;document.getElementById('f-sit').value='';document.getElementById('f-forn').value='';document.getElementById('q-estoque').value='';show('estoque');renderEstoque();}
+function syncControls(){ document.querySelectorAll('.th-filter input,.th-filter select').forEach(el=>{ el.value = colFilters[el.dataset.k]||''; }); }
+function goCurva(c){ colFilters={abc:c}; fSel.value=''; document.getElementById('q-estoque').value=''; syncControls(); show('estoque'); }
+buildEstoqueShell();
+['q-estoque','f-forn'].forEach(id=>document.getElementById(id).addEventListener('input',renderEstoque));
+document.getElementById('btn-clear').onclick=()=>{ colFilters={}; fSel.value=''; document.getElementById('q-estoque').value=''; syncControls(); renderEstoque(); };
 
 // CSV
 document.getElementById('btn-csv').onclick=()=>{
-  const rows=filtered().slice().sort(byMarca());const head=['Marca'].concat(COLS.map(c=>c.t));
+  const rows=filtered().slice().sort(byMarca(r=>r.giro));const head=['Marca'].concat(COLS.map(c=>c.t));
   const lines=[head.join(';')].concat(rows.map(r=>['"'+r.nome.replace(/"/g,'""')+'"'].concat(COLS.map(c=>{let v=r[c.k];if(typeof v==='number')v=(''+v).replace('.',',');return '"'+(''+(v??'')).replace(/"/g,'""')+'"';})).join(';')));
   const blob=new Blob(["﻿"+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='estoque_por_marca.csv';a.click();
