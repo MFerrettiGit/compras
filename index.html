@@ -285,7 +285,7 @@ const cUn   ={t:'Saldo (un)',num:1,render:r=>fmt(r.saldoAtual)};
 const cCx   ={t:'Saldo (cx)',num:1,render:r=>fmt1(r.saldoAtualCx)};
 const cDias ={t:'Saldo (dias)',num:1,render:r=>giroCell(r.giro)};
 const cV30  ={t:'Vende/30 dias',num:1,render:r=>fmt(r.__v30)};
-const PCOLS=[cMarca,cCode,cDesc,cAbc,cUn,cCx,cDias,cV30];   // padrão dos painéis
+const PCOLS=[cCode,cDesc,cAbc,cUn,cCx,cDias,cV30];   // padrão dos painéis (marca vira cabeçalho de grupo)
 
 // ===== ESTOQUE: tabela agrupada por marca =====
 const fSel=document.getElementById('f-forn');
@@ -359,10 +359,21 @@ document.getElementById('btn-csv').onclick=()=>{
 
 // ===== PAINÉIS ATENÇÃO (colunas-padrão + ordenados por marca) =====
 function buildPanel(id,icon,iccls,title,arr){
-  return `<div class="panel" id="${id}"><div class="panel-h"><div class="ic ${iccls}">${icon}</div>${title}<span class="cnt ${iccls}">${arr.length}</span></div>
-  <div class="panel-b tall">${arr.length? `<table><thead><tr>${PCOLS.map(c=>`<th class="${c.num?'num':''}">${c.t}</th>`).join('')}</tr></thead><tbody>`+
-    arr.map(r=>`<tr onclick='openModal("${r.produto}")' style="cursor:pointer">${PCOLS.map(c=>`<td class="${c.cls||''} ${c.num?'num':''}">${c.render(r)}</td>`).join('')}</tr>`).join('')+
-    `</tbody></table>` : '<div class="empty">Nenhum produto nesta condição 🎉</div>'}</div></div>`;
+  let body;
+  if(!arr.length){ body='<div class="empty">Nenhum produto nesta condição 🎉</div>'; }
+  else {
+    const groups={};
+    arr.forEach(r=>{(groups[r.nome]=groups[r.nome]||[]).push(r);});
+    const names=Object.keys(groups).sort((a,b)=>a.localeCompare(b));
+    body='<table><thead><tr>'+PCOLS.map(c=>`<th class="${c.num?'num':''}">${c.t}</th>`).join('')+'</tr></thead><tbody>';
+    names.forEach(nm=>{
+      const g=groups[nm];
+      body+=`<tr class="grp"><td colspan="${PCOLS.length}"><span class="grp-name">📦 ${esc(nm)}</span><span class="grp-meta">${g.length} ${g.length>1?'itens':'item'}</span></td></tr>`;
+      g.forEach(r=>{body+=`<tr onclick='openModal("${r.produto}")' style="cursor:pointer">`+PCOLS.map(c=>`<td class="${c.cls||''} ${c.num?'num':''}">${c.render(r)}</td>`).join('')+'</tr>';});
+    });
+    body+='</tbody></table>';
+  }
+  return `<div class="panel" id="${id}"><div class="panel-h"><div class="ic ${iccls}">${icon}</div>${title}<span class="cnt ${iccls}">${arr.length}</span></div><div class="panel-b tall">${body}</div></div>`;
 }
 document.getElementById('compra-panels').innerHTML =
   buildPanel('pan-baixo','⛔','red','Estoque baixo e SEM reposição programada', lowStock.slice().sort(byMarca(r=>r.pontoPedido-r.saldoAtual))) +
