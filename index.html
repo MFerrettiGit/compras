@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compras — Estoque & Reposição | M. Ferretti</title>
+<style>
+:root{
+  --azul:#2B2FA8; --azul-2:#3b40c9; --azul-d:#1d2078;
+  --bg:#f4f6fb; --card:#ffffff; --txt:#1c2233; --muted:#6b7388;
+  --line:#e6e9f2; --shadow:0 1px 3px rgba(20,30,80,.07),0 6px 24px rgba(20,30,80,.05);
+  --red:#d1344b; --red-bg:#fdeaed; --amber:#c97a00; --amber-bg:#fdf2dd;
+  --green:#1f9d57; --green-bg:#e6f6ec; --blue-bg:#e9eaff;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--txt);font-size:14px;line-height:1.45}
+a{color:var(--azul)}
+/* HEADER */
+header{background:linear-gradient(120deg,var(--azul-d),var(--azul) 55%,var(--azul-2));color:#fff;padding:18px 26px}
+.head-row{display:flex;align-items:center;gap:18px;max-width:1480px;margin:0 auto;flex-wrap:wrap}
+header img{height:40px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25))}
+.head-titles h1{margin:0;font-size:20px;font-weight:700;letter-spacing:.2px}
+.head-titles p{margin:2px 0 0;font-size:12.5px;opacity:.85}
+.head-meta{margin-left:auto;text-align:right;font-size:12px;opacity:.92}
+.head-meta b{font-size:13px}
+/* TABS */
+nav{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30;box-shadow:0 1px 8px rgba(20,30,80,.04)}
+.tabs{display:flex;gap:4px;max-width:1480px;margin:0 auto;padding:0 18px;overflow-x:auto}
+.tab{padding:14px 16px;border:none;background:none;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:.15s}
+.tab:hover{color:var(--azul)}
+.tab.active{color:var(--azul);border-bottom-color:var(--azul)}
+.tab .pill{display:inline-block;margin-left:6px;background:var(--blue-bg);color:var(--azul);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700}
+.tab.crit .pill{background:var(--red-bg);color:var(--red)}
+/* LAYOUT */
+main{max-width:1480px;margin:0 auto;padding:22px 18px 60px}
+.view{display:none;animation:fade .25s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+h2.sec{font-size:16px;margin:6px 0 14px;display:flex;align-items:center;gap:9px}
+h2.sec .dot{width:9px;height:9px;border-radius:50%;background:var(--azul)}
+.sub{color:var(--muted);font-size:12.5px;margin:-8px 0 16px}
+/* KPI CARDS */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:22px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--azul)}
+.kpi.red::before{background:var(--red)} .kpi.amber::before{background:var(--amber)} .kpi.green::before{background:var(--green)}
+.kpi .lbl{font-size:12px;color:var(--muted);font-weight:600}
+.kpi .val{font-size:30px;font-weight:800;margin:6px 0 2px;letter-spacing:-.5px}
+.kpi.red .val{color:var(--red)} .kpi.amber .val{color:var(--amber)} .kpi.green .val{color:var(--green)}
+.kpi .hint{font-size:11.5px;color:var(--muted)}
+.kpi.clickable{cursor:pointer;transition:.15s} .kpi.clickable:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(20,30,80,.12),0 12px 30px rgba(20,30,80,.08)}
+/* ALERT BLOCKS */
+.alert-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px;margin-bottom:8px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.panel-h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px}
+.panel-h .ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:16px}
+.panel-h .cnt{margin-left:auto;font-size:12px;font-weight:700;border-radius:20px;padding:2px 10px}
+.ic.red{background:var(--red-bg)} .ic.amber{background:var(--amber-bg)} .ic.green{background:var(--green-bg)} .ic.blue{background:var(--blue-bg)}
+.cnt.red{background:var(--red-bg);color:var(--red)} .cnt.amber{background:var(--amber-bg);color:var(--amber)} .cnt.green{background:var(--green-bg);color:var(--green)} .cnt.blue{background:var(--blue-bg);color:var(--azul)}
+.panel-b{max-height:340px;overflow:auto}
+.panel-b.tall{max-height:560px}
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:12.7px}
+thead th{position:sticky;top:0;background:#f7f8fc;color:var(--muted);text-align:left;padding:9px 12px;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none;white-space:nowrap}
+thead th.sortable:hover{color:var(--azul)}
+thead th .arr{opacity:.4;font-size:10px}
+tbody td{padding:9px 12px;border-bottom:1px solid #f0f2f8;white-space:nowrap}
+tbody tr:hover{background:#fafbff}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td.desc{white-space:normal;min-width:200px;font-weight:600}
+td.code{font-family:"Consolas",monospace;font-size:11.5px;color:var(--azul);font-weight:600}
+.badge{display:inline-block;padding:1px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.b-A{background:#e9eaff;color:var(--azul)} .b-B{background:#e6f6ec;color:var(--green)} .b-C{background:var(--amber-bg);color:var(--amber)} .b-D{background:#f0f1f5;color:var(--muted)}
+.b-red{background:var(--red-bg);color:var(--red)} .b-amber{background:var(--amber-bg);color:var(--amber)} .b-green{background:var(--green-bg);color:var(--green)} .b-grey{background:#f0f1f5;color:var(--muted)}
+.dias-bar{display:inline-block;height:6px;border-radius:4px;background:var(--azul);vertical-align:middle}
+/* TOOLBAR */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.toolbar input,.toolbar select{padding:8px 11px;border:1px solid var(--line);border-radius:9px;font-size:13px;background:var(--card);color:var(--txt)}
+.toolbar input[type=search]{min-width:230px;flex:1;max-width:340px}
+.toolbar .spacer{flex:1}
+.tag{font-size:12px;color:var(--muted)}
+.btn{padding:8px 13px;border:1px solid var(--line);background:var(--card);border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--txt)}
+.btn:hover{border-color:var(--azul);color:var(--azul)}
+.btn.primary{background:var(--azul);color:#fff;border-color:var(--azul)} .btn.primary:hover{background:var(--azul-d)}
+.empty{padding:30px;text-align:center;color:var(--muted);font-size:13px}
+/* FORNECEDOR CARDS */
+.forn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.forn-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);border-left:4px solid var(--line)}
+.forn-card.go{border-left-color:var(--green)} .forn-card.no{border-left-color:var(--line)}
+.forn-card h3{margin:0 0 4px;font-size:14px;line-height:1.3}
+.forn-card .pedido{font-size:24px;font-weight:800;color:var(--azul);margin:8px 0 2px}
+.forn-card.no .pedido{color:var(--muted)}
+.forn-meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11.5px;color:var(--muted);margin-top:8px}
+.forn-meta b{color:var(--txt)}
+.forn-flag{display:inline-block;font-size:11px;font-weight:700;border-radius:20px;padding:2px 9px;margin-top:8px}
+.flag-go{background:var(--green-bg);color:var(--green)} .flag-no{background:#f0f1f5;color:var(--muted)}
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(20,25,55,.5);z-index:60;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:var(--card);border-radius:16px;max-width:680px;width:100%;max-height:88vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal-h{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:12px;position:sticky;top:0;background:var(--card)}
+.modal-h h3{margin:0;font-size:16px}
+.modal-h .code{font-size:12px;margin-top:3px}
+.modal-h .x{margin-left:auto;border:none;background:#f0f1f5;width:32px;height:32px;border-radius:9px;font-size:18px;cursor:pointer;color:var(--muted)}
+.modal-grid{padding:18px 22px;display:grid;grid-template-columns:1fr 1fr;gap:12px 24px}
+.mf{border-bottom:1px solid #f0f2f8;padding-bottom:7px}
+.mf .k{font-size:11px;color:var(--muted);font-weight:600}
+.mf .v{font-size:14px;font-weight:600;margin-top:1px}
+.mf.full{grid-column:1/-1}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
+@media(max-width:640px){.modal-grid{grid-template-columns:1fr}.head-meta{margin-left:0;text-align:left;width:100%}}
+</style>
+</head>
+<body>
+<header>
+  <div class="head-row">
+    <img src="logo-ferretti-branco.png" alt="Ferretti">
+    <div class="head-titles">
+      <h1>Compras — Estoque &amp; Reposição</h1>
+      <p>Painel de apoio à decisão de compra • M. Ferretti Distribuidora</p>
+    </div>
+    <div class="head-meta">
+      <div>Filial <b>01</b> • <b id="m-skus">–</b> SKUs • <b id="m-forn">–</b> fornecedores</div>
+      <div>Atualizado em <b id="m-data">–</b></div>
+    </div>
+  </div>
+</header>
+
+<nav><div class="tabs" id="tabs">
+  <button class="tab active" data-v="geral">Visão Geral</button>
+  <button class="tab" data-v="estoque">Estoque <span class="pill" id="t-estoque">0</span></button>
+  <button class="tab" data-v="fornecedor">Compra por Fornecedor</button>
+  <button class="tab crit" data-v="compra">Atenção — Compra <span class="pill" id="t-compra">0</span></button>
+  <button class="tab" data-v="venda">Atenção — Venda <span class="pill" id="t-venda">0</span></button>
+</div></nav>
+
+<main>
+  <!-- ============ VISÃO GERAL ============ -->
+  <section class="view active" id="v-geral">
+    <h2 class="sec"><span class="dot"></span>As perguntas que importam</h2>
+    <p class="sub">Respostas calculadas direto da planilha. Clique num cartão para ir à lista detalhada.</p>
+    <div class="kpis" id="kpis-q"></div>
+
+    <h2 class="sec"><span class="dot"></span>Resumo do estoque</h2>
+    <div class="kpis" id="kpis-geral"></div>
+
+    <div class="alert-grid">
+      <div class="panel">
+        <div class="panel-h"><div class="ic red">⛔</div>Estoque baixo & sem reposição programada<span class="cnt red" id="c-baixo">0</span></div>
+        <div class="panel-b" id="p-baixo"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><div class="ic red">0️⃣</div>Em linha e zerados<span class="cnt red" id="c-zero">0</span></div>
+        <div class="panel-b" id="p-zero"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><div class="ic green">✅</div>Fornecedores aconselhados a pedir<span class="cnt green" id="c-fpedir">0</span></div>
+        <div class="panel-b" id="p-fpedir"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ESTOQUE ============ -->
+  <section class="view" id="v-estoque">
+    <h2 class="sec"><span class="dot"></span>Estoque e seus detalhes</h2>
+    <p class="sub">Base completa. Busque, filtre e ordene clicando nas colunas. Clique numa linha para ver todos os detalhes.</p>
+    <div class="toolbar">
+      <input type="search" id="q-estoque" placeholder="🔎 Buscar produto, código ou descrição...">
+      <select id="f-forn"><option value="">Todos os fornecedores</option></select>
+      <select id="f-abc"><option value="">Curva ABC: todas</option><option>A</option><option>B</option><option>C</option><option>D</option></select>
+      <select id="f-sit">
+        <option value="">Situação: todas</option>
+        <option value="zerado">Zerados</option>
+        <option value="baixo">Abaixo do ponto de pedido</option>
+        <option value="alto">Estoque alto (giro &gt; 90d)</option>
+        <option value="pedir">Geram pedido</option>
+      </select>
+      <span class="spacer"></span>
+      <span class="tag" id="cnt-estoque"></span>
+      <button class="btn" id="btn-csv">⬇ Exportar CSV</button>
+    </div>
+    <div class="panel"><div class="panel-b tall" id="tbl-estoque"></div></div>
+  </section>
+
+  <!-- ============ FORNECEDOR ============ -->
+  <section class="view" id="v-fornecedor">
+    <h2 class="sec"><span class="dot"></span>Total de compra por fornecedor</h2>
+    <p class="sub">Valor do pedido sugerido pelo sistema para cada fornecedor (campo "Total do Pedido"). Verde = aconselhado pedir agora.</p>
+    <div class="kpis" id="kpis-forn"></div>
+    <div class="forn-grid" id="forn-grid"></div>
+  </section>
+
+  <!-- ============ ATENÇÃO COMPRA ============ -->
+  <section class="view" id="v-compra">
+    <h2 class="sec"><span class="dot"></span>Produtos que precisam de atenção — Compra</h2>
+    <p class="sub">Onde falta produto: precisa repor, precisa pedido ou está zerado.</p>
+    <div class="alert-grid" id="compra-panels"></div>
+  </section>
+
+  <!-- ============ ATENÇÃO VENDA ============ -->
+  <section class="view" id="v-venda">
+    <h2 class="sec"><span class="dot"></span>Produtos que precisam de atenção — Venda</h2>
+    <p class="sub">Onde sobra produto: estoque alto, capital parado e itens de giro muito lento.</p>
+    <div class="alert-grid" id="venda-panels"></div>
+  </section>
+</main>
+
+<footer>M. Ferretti Distribuidora • Painel de Compras — dados da planilha ESTOQUE. <span id="foot-data"></span></footer>
+
+<div class="modal-bg" id="modal"><div class="modal">
+  <div class="modal-h"><div><h3 id="md-desc"></h3><div class="code" id="md-code"></div></div><button class="x" onclick="closeModal()">×</button></div>
+  <div class="modal-grid" id="md-grid"></div>
+</div></div>
+
+<script src="dados/estoque.js"></script>
+<script>
+const D = (window.ESTOQUE||[]).filter(r=>r.produto);
+const GIRO_ALTO = 90;      // dias para considerar estoque alto
+const POUCA_CX  = 5;       // <= caixas = pouca quantidade física
+
+// ---- helpers ----
+const fmt = n => (n||0).toLocaleString('pt-BR',{maximumFractionDigits:0});
+const fmt1= n => (n||0).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
+const moeda = n => 'R$ '+(n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const dt = s => s? s.split('-').reverse().join('/') : '—';
+const esc = s => (''+(s??'')).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const abcBadge = a => `<span class="badge b-${a||'D'}">${a||'-'}</span>`;
+
+// ---- classificadores ----
+const isZeradoLinha = r => r.bloqueado==='Em Uso' && r.saldoAtual<=0;
+const isBaixoSemPedido = r => r.pontoPedido>0 && r.saldoAtual < r.pontoPedido && (r.qtdeEntrada||0)<=0;
+const isAbaixoPonto = r => r.pontoPedido>0 && r.saldoAtual < r.pontoPedido;
+const isAltoGiro = r => r.giro > GIRO_ALTO;
+const isGeraPedido = r => r.geraPedido==='SIM';
+const isSlowMover = r => r.giro > GIRO_ALTO && r.saldoAtualCx>0 && r.saldoAtualCx <= POUCA_CX;
+const valorEstoque = r => (r.saldoAtual||0) * (r.custoStd||0);
+
+// ---- agregados ----
+const lowStock   = D.filter(isBaixoSemPedido);
+const zerados    = D.filter(isZeradoLinha);
+const altoGiro   = D.filter(isAltoGiro).sort((a,b)=>b.giro-a.giro);
+const slowMovers = D.filter(isSlowMover).sort((a,b)=>b.giro-a.giro);
+const geraPedido = D.filter(isGeraPedido);
+const semTabela  = D.filter(r=>r.status==='ITEM SEM TABELA DE PRECO');
+
+// fornecedores
+const fornMap = {};
+D.forEach(r=>{
+  const k=r.nome;
+  if(!fornMap[k]) fornMap[k]={nome:k,cod:r.codForn,pedido:r.totalPedido||0,itens:0,abaixo:0,zerados:0,gera:0,freq:r.semMensal==='S'?'Semanal':'Mensal',dia:r.diaSemana,vlrEstoque:0};
+  const f=fornMap[k];
+  f.itens++; if(isAbaixoPonto(r))f.abaixo++; if(isZeradoLinha(r))f.zerados++; if(isGeraPedido(r))f.gera++;
+  f.vlrEstoque+=valorEstoque(r);
+  if((r.totalPedido||0)>f.pedido) f.pedido=r.totalPedido||0;
+});
+const forns = Object.values(fornMap).sort((a,b)=>b.pedido-a.pedido);
+const fornAconselhados = forns.filter(f=>f.pedido>0);
+
+const totEstoque = D.reduce((s,r)=>s+valorEstoque(r),0);
+const totPedido  = forns.reduce((s,f)=>s+f.pedido,0);
+
+// ---- header meta ----
+document.getElementById('m-skus').textContent = D.length;
+document.getElementById('m-forn').textContent = forns.length;
+const dataGer = "12/06/2026 14:22";
+document.getElementById('m-data').textContent = dataGer;
+document.getElementById('foot-data').textContent = 'Gerado em '+dataGer;
+document.getElementById('t-estoque').textContent = D.length;
+document.getElementById('t-compra').textContent = lowStock.length+zerados.length+geraPedido.length;
+document.getElementById('t-venda').textContent = altoGiro.length;
+
+// ===== VISÃO GERAL: cartões-pergunta =====
+const qcards = [
+  {cls:'red',  val:lowStock.length,  lbl:'Estoque baixo e SEM pedido', hint:'Abaixo do ponto de pedido e nada programado pra chegar', go:()=>goEstoque('baixo')},
+  {cls:'red',  val:zerados.length,   lbl:'Em linha e zerados',          hint:'Produto "Em Uso" com saldo 0', go:()=>goEstoque('zerado')},
+  {cls:'green',val:fornAconselhados.length, lbl:'Fornecedores p/ pedir', hint:'Com pedido sugerido pelo sistema', go:()=>show('fornecedor')},
+  {cls:'amber',val:altoGiro.length,  lbl:'Estoque alto', hint:'Mais de '+GIRO_ALTO+' dias de estoque', go:()=>goEstoque('alto')},
+  {cls:'amber',val:slowMovers.length,lbl:'Pouca qtd, muitos dias', hint:'≤ '+POUCA_CX+' cx mas giro lento', go:()=>show('venda')},
+];
+document.getElementById('kpis-q').innerHTML = qcards.map(c=>
+  `<div class="kpi ${c.cls} clickable" data-go="${c.lbl}"><div class="lbl">${c.lbl}</div><div class="val">${c.val}</div><div class="hint">${c.hint}</div></div>`).join('');
+[...document.querySelectorAll('#kpis-q .kpi')].forEach((el,i)=>el.onclick=qcards[i].go);
+
+// resumo estoque
+const gcards = [
+  {lbl:'Valor total em estoque', val:moeda(totEstoque), hint:'Saldo × custo padrão'},
+  {lbl:'Pedido sugerido total', val:moeda(totPedido), hint:'Soma dos pedidos por fornecedor', cls:'green'},
+  {lbl:'Itens curva A', val:D.filter(r=>r.abc==='A').length, hint:'Mais relevantes no faturamento'},
+  {lbl:'Itens sem tabela de preço', val:semTabela.length, hint:'Status "ITEM SEM TABELA DE PRECO"', cls:'amber'},
+];
+document.getElementById('kpis-geral').innerHTML = gcards.map(c=>
+  `<div class="kpi ${c.cls||''}"><div class="lbl">${c.lbl}</div><div class="val" style="font-size:24px">${c.val}</div><div class="hint">${c.hint}</div></div>`).join('');
+
+// mini listas
+function miniRow(r,extra){return `<tr onclick='openModal("${r.produto}")' style="cursor:pointer">
+  <td class="code">${esc(r.produto)}</td><td class="desc">${esc(r.descricao)}</td>${extra}</tr>`;}
+document.getElementById('p-baixo').innerHTML = lowStock.length? `<table><thead><tr><th>Código</th><th>Produto</th><th class="num">Saldo</th><th class="num">Ponto</th></tr></thead><tbody>`+
+  lowStock.sort((a,b)=>(a.saldoAtual-a.pontoPedido)-(b.saldoAtual-b.pontoPedido)).map(r=>miniRow(r,`<td class="num">${fmt(r.saldoAtual)}</td><td class="num">${fmt(r.pontoPedido)}</td>`)).join('')+`</tbody></table>` : '<div class="empty">Nenhum 🎉</div>';
+document.getElementById('c-baixo').textContent = lowStock.length;
+document.getElementById('p-zero').innerHTML = zerados.length? `<table><thead><tr><th>Código</th><th>Produto</th><th>ABC</th><th class="num">Vend/dia</th></tr></thead><tbody>`+
+  zerados.sort((a,b)=>b.qtdeVendidaDia-a.qtdeVendidaDia).map(r=>miniRow(r,`<td>${abcBadge(r.abc)}</td><td class="num">${fmt1(r.qtdeVendidaDia)}</td>`)).join('')+`</tbody></table>` : '<div class="empty">Nenhum 🎉</div>';
+document.getElementById('c-zero').textContent = zerados.length;
+document.getElementById('p-fpedir').innerHTML = fornAconselhados.length? `<table><thead><tr><th>Fornecedor</th><th class="num">Pedido</th><th class="num">Itens p/ repor</th></tr></thead><tbody>`+
+  fornAconselhados.map(f=>`<tr onclick="show('fornecedor')" style="cursor:pointer"><td class="desc">${esc(f.nome)}</td><td class="num">${moeda(f.pedido)}</td><td class="num">${f.abaixo}</td></tr>`).join('')+`</tbody></table>` : '<div class="empty">Nenhum</div>';
+document.getElementById('c-fpedir').textContent = fornAconselhados.length;
+
+// ===== ESTOQUE: tabela =====
+const fSel=document.getElementById('f-forn');
+[...new Set(D.map(r=>r.nome))].sort().forEach(n=>{const o=document.createElement('option');o.textContent=n;fSel.appendChild(o);});
+const COLS = [
+  {k:'produto',t:'Código',cls:'code'},
+  {k:'descricao',t:'Produto',cls:'desc'},
+  {k:'abc',t:'ABC',render:r=>abcBadge(r.abc)},
+  {k:'saldoAtual',t:'Saldo (un)',num:1,render:r=>fmt(r.saldoAtual)},
+  {k:'saldoAtualCx',t:'Saldo (cx)',num:1,render:r=>fmt1(r.saldoAtualCx)},
+  {k:'pontoPedido',t:'Ponto ped.',num:1,render:r=>fmt(r.pontoPedido)},
+  {k:'giro',t:'Estoque (dias)',num:1,render:r=>giroCell(r.giro)},
+  {k:'qtdeVendidaDia',t:'Venda/dia',num:1,render:r=>fmt1(r.qtdeVendidaDia)},
+  {k:'qtdeEntrada',t:'Chegando',num:1,render:r=>fmt(r.qtdeEntrada)},
+  {k:'qtdSugCalc',t:'Sugestão (un)',num:1,render:r=>r.qtdSugCalc>0?'<b>'+fmt(r.qtdSugCalc)+'</b>':'—'},
+  {k:'ultPrcCompra',t:'Últ. compra',num:1,render:r=>moeda(r.ultPrcCompra)},
+  {k:'status',t:'Situação',render:r=>statusBadge(r)},
+];
+function giroCell(g){const w=Math.min(60,Math.round((g/180)*60));const col=g>GIRO_ALTO?'var(--amber)':g<15?'var(--red)':'var(--azul)';
+  return `<span style="display:inline-flex;align-items:center;gap:6px"><b>${fmt(g)}</b><span class="dias-bar" style="width:${w}px;background:${col}"></span></span>`;}
+function statusBadge(r){
+  if(isZeradoLinha(r)) return '<span class="badge b-red">Zerado</span>';
+  if(isBaixoSemPedido(r)) return '<span class="badge b-red">Baixo s/ pedido</span>';
+  if(isGeraPedido(r)) return '<span class="badge b-green">Gera pedido</span>';
+  if(isAltoGiro(r)) return '<span class="badge b-amber">Estoque alto</span>';
+  if(isAbaixoPonto(r)) return '<span class="badge b-amber">Abaixo ponto</span>';
+  return '<span class="badge b-grey">OK</span>';
+}
+let sortK='descricao',sortDir=1,fSit='';
+function filtered(){
+  const q=document.getElementById('q-estoque').value.toLowerCase().trim();
+  const ff=fSel.value, fa=document.getElementById('f-abc').value, fs=document.getElementById('f-sit').value;
+  return D.filter(r=>{
+    if(ff && r.nome!==ff) return false;
+    if(fa && r.abc!==fa) return false;
+    if(fs==='zerado' && !isZeradoLinha(r)) return false;
+    if(fs==='baixo' && !isAbaixoPonto(r)) return false;
+    if(fs==='alto' && !isAltoGiro(r)) return false;
+    if(fs==='pedir' && !isGeraPedido(r)) return false;
+    if(q && !(r.produto.toLowerCase().includes(q)||r.descricao.toLowerCase().includes(q)||r.nome.toLowerCase().includes(q))) return false;
+    return true;
+  }).sort((a,b)=>{let x=a[sortK],y=b[sortK];if(typeof x==='string'){return x.localeCompare(y)*sortDir;}return ((x||0)-(y||0))*sortDir;});
+}
+function renderEstoque(){
+  const rows=filtered();
+  document.getElementById('cnt-estoque').textContent=rows.length+' de '+D.length+' produtos';
+  let h='<table><thead><tr>'+COLS.map(c=>`<th class="sortable ${c.num?'num':''}" data-k="${c.k}">${c.t} <span class="arr">${sortK===c.k?(sortDir>0?'▲':'▼'):'↕'}</span></th>`).join('')+'</tr></thead><tbody>';
+  if(!rows.length) h+=`<tr><td colspan="${COLS.length}"><div class="empty">Nada encontrado.</div></td></tr>`;
+  rows.forEach(r=>{h+=`<tr onclick='openModal("${r.produto}")' style="cursor:pointer">`+COLS.map(c=>`<td class="${c.cls||''} ${c.num?'num':''}">${c.render?c.render(r):esc(r[c.k])}</td>`).join('')+'</tr>';});
+  h+='</tbody></table>';
+  const box=document.getElementById('tbl-estoque'); box.innerHTML=h;
+  box.querySelectorAll('th.sortable').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(sortK===k)sortDir*=-1;else{sortK=k;sortDir=1;}renderEstoque();});
+}
+['q-estoque','f-forn','f-abc','f-sit'].forEach(id=>document.getElementById(id).addEventListener('input',renderEstoque));
+function goEstoque(sit){document.getElementById('f-sit').value=sit;show('estoque');renderEstoque();}
+
+// CSV
+document.getElementById('btn-csv').onclick=()=>{
+  const rows=filtered();const head=COLS.map(c=>c.t);
+  const lines=[head.join(';')].concat(rows.map(r=>COLS.map(c=>{let v=r[c.k];if(typeof v==='number')v=(''+v).replace('.',',');return '"'+(''+(v??'')).replace(/"/g,'""')+'"';}).join(';')));
+  const blob=new Blob(["﻿"+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='estoque_filtrado.csv';a.click();
+};
+
+// ===== FORNECEDOR =====
+document.getElementById('kpis-forn').innerHTML=[
+  {lbl:'Fornecedores',val:forns.length},
+  {lbl:'Aconselhados a pedir',val:fornAconselhados.length,cls:'green'},
+  {lbl:'Total a comprar',val:moeda(totPedido),cls:'green'},
+  {lbl:'Sem pedido no momento',val:forns.length-fornAconselhados.length},
+].map(c=>`<div class="kpi ${c.cls||''}"><div class="lbl">${c.lbl}</div><div class="val" style="font-size:24px">${c.val}</div></div>`).join('');
+document.getElementById('forn-grid').innerHTML=forns.map(f=>{
+  const go=f.pedido>0;
+  return `<div class="forn-card ${go?'go':'no'}">
+    <h3>${esc(f.nome)}</h3>
+    <div class="tag">Cód. ${esc(f.cod)} • ${f.itens} itens</div>
+    <div class="pedido">${moeda(f.pedido)}</div>
+    <div class="tag">total do pedido sugerido</div>
+    <div class="forn-meta">
+      <span>Abaixo do ponto: <b>${f.abaixo}</b></span>
+      <span>Zerados: <b>${f.zerados}</b></span>
+      <span>Gera pedido: <b>${f.gera}</b></span>
+      <span>Estoque: <b>${moeda(f.vlrEstoque)}</b></span>
+      <span>Freq.: <b>${f.freq}${f.dia?' ('+esc(f.dia)+')':''}</b></span>
+    </div>
+    <span class="forn-flag ${go?'flag-go':'flag-no'}">${go?'✅ Aconselhado pedir':'Sem pedido agora'}</span>
+  </div>`;}).join('');
+
+// ===== PAINÉIS ATENÇÃO =====
+function buildPanel(icon,iccls,title,arr,cols){
+  return `<div class="panel"><div class="panel-h"><div class="ic ${iccls}">${icon}</div>${title}<span class="cnt ${iccls}">${arr.length}</span></div>
+  <div class="panel-b tall">${arr.length? `<table><thead><tr>${cols.map(c=>`<th class="${c.num?'num':''}">${c.t}</th>`).join('')}</tr></thead><tbody>`+
+    arr.map(r=>`<tr onclick='openModal("${r.produto}")' style="cursor:pointer">${cols.map(c=>`<td class="${c.cls||''} ${c.num?'num':''}">${c.render(r)}</td>`).join('')}</tr>`).join('')+
+    `</tbody></table>` : '<div class="empty">Nenhum produto nesta condição 🎉</div>'}</div></div>`;
+}
+const cCode={t:'Código',cls:'code',render:r=>esc(r.produto)};
+const cDesc={t:'Produto',cls:'desc',render:r=>esc(r.descricao)};
+const cAbc ={t:'ABC',render:r=>abcBadge(r.abc)};
+
+document.getElementById('compra-panels').innerHTML =
+  buildPanel('⛔','red','Estoque baixo e SEM reposição programada',
+     lowStock.sort((a,b)=>(a.saldoAtual-a.pontoPedido)-(b.saldoAtual-b.pontoPedido)),
+     [cCode,cDesc,cAbc,{t:'Saldo',num:1,render:r=>fmt(r.saldoAtual)},{t:'Ponto',num:1,render:r=>fmt(r.pontoPedido)},{t:'Venda/dia',num:1,render:r=>fmt1(r.qtdeVendidaDia)}]) +
+  buildPanel('0️⃣','red','Em linha e zerados',
+     zerados.sort((a,b)=>b.qtdeVendidaDia-a.qtdeVendidaDia),
+     [cCode,cDesc,cAbc,{t:'Venda/dia',num:1,render:r=>fmt1(r.qtdeVendidaDia)},{t:'Últ. compra',num:1,render:r=>dt(r.datUltCompra)}]) +
+  buildPanel('📝','green','Itens que geram pedido agora',
+     geraPedido.sort((a,b)=>b.valSugCalc-a.valSugCalc),
+     [cCode,cDesc,{t:'Fornecedor',cls:'desc',render:r=>esc(r.nome)},{t:'Sug. (un)',num:1,render:r=>fmt(r.qtdSugCalc)},{t:'Sug. (R$)',num:1,render:r=>moeda(r.valSugCalc)}]) +
+  buildPanel('🔻','amber','Abaixo do ponto de pedido',
+     D.filter(isAbaixoPonto).sort((a,b)=>(a.saldoAtual-a.pontoPedido)-(b.saldoAtual-b.pontoPedido)),
+     [cCode,cDesc,cAbc,{t:'Saldo',num:1,render:r=>fmt(r.saldoAtual)},{t:'Ponto',num:1,render:r=>fmt(r.pontoPedido)},{t:'Chegando',num:1,render:r=>fmt(r.qtdeEntrada)}]);
+
+document.getElementById('venda-panels').innerHTML =
+  buildPanel('📦','amber','Estoque alto (mais de '+GIRO_ALTO+' dias)',
+     altoGiro,
+     [cCode,cDesc,cAbc,{t:'Estoque (dias)',num:1,render:r=>giroCell(r.giro)},{t:'Saldo (cx)',num:1,render:r=>fmt1(r.saldoAtualCx)},{t:'Vlr estoque',num:1,render:r=>moeda(valorEstoque(r))}]) +
+  buildPanel('🐌','amber','Pouca quantidade, mas muitos dias de estoque',
+     slowMovers,
+     [cCode,cDesc,cAbc,{t:'Saldo (cx)',num:1,render:r=>fmt1(r.saldoAtualCx)},{t:'Estoque (dias)',num:1,render:r=>giroCell(r.giro)},{t:'Venda/dia',num:1,render:r=>fmt1(r.qtdeVendidaDia)}]) +
+  buildPanel('💰','blue','Maior capital parado (valor em estoque)',
+     [...D].sort((a,b)=>valorEstoque(b)-valorEstoque(a)).slice(0,25),
+     [cCode,cDesc,cAbc,{t:'Saldo (un)',num:1,render:r=>fmt(r.saldoAtual)},{t:'Estoque (dias)',num:1,render:r=>fmt(r.giro)},{t:'Vlr estoque',num:1,render:r=>moeda(valorEstoque(r))}]) +
+  buildPanel('🛑','grey','Curva D com estoque alto (candidatos a reduzir)',
+     D.filter(r=>r.abc==='D'&&r.giro>GIRO_ALTO).sort((a,b)=>valorEstoque(b)-valorEstoque(a)),
+     [cCode,cDesc,{t:'Estoque (dias)',num:1,render:r=>fmt(r.giro)},{t:'Saldo (un)',num:1,render:r=>fmt(r.saldoAtual)},{t:'Vlr estoque',num:1,render:r=>moeda(valorEstoque(r))}]);
+
+// ===== MODAL =====
+const FIELDS=[
+  ['Fornecedor','nome'],['Cód. fornecedor','codForn'],['Loja','loja'],['Cond. pagamento','cond'],
+  ['Grupo','grupo'],['Tipo','tipo'],['Unidade','unidade'],['Tabela de preço','tabela'],
+  ['Preço de tabela','precoTabela','m'],['Qtd. p/ embalagem','qtdEmbalagem','n'],
+  ['Estoque segurança','estoqueSeguranca','n'],['Ponto de pedido','pontoPedido','n'],
+  ['Última compra','datUltCompra','d'],['Qtde chegando','qtdeEntrada','n'],
+  ['Período análise (dias)','qtdeDias','n'],['Qtde vendida','qtdeVendida','n'],['Vendida (cx)','qtdeVendidaCx','n1'],
+  ['Venda por dia','qtdeVendidaDia','n1'],['Valor faturado','faturado','m'],
+  ['Saldo atual (un)','saldoAtual','n'],['Saldo atual (cx)','saldoAtualCx','n1'],
+  ['Reservada','qtdeReservada','n'],['Empenhada','qtdeEmpenhada','n'],['Em pedido venda','qtdeEmPedidoVenda','n'],
+  ['Estoque (dias) / giro','giro','n1'],['Sugestão','sugestao','n'],['Sugestão LE','sugestaoLE','n'],
+  ['Faturamento','faturamento','m'],['Custo total','custoTotal','m'],['Custo padrão','custoStd','m'],
+  ['Último preço compra','ultPrcCompra','m'],['Estoque máximo','estoqueMax','n'],
+  ['% Curva','pctCurva','n1'],['Curva ABC','abc'],['Rank','rank'],['Prazo entrega (dias)','prazoEntrega','n'],
+  ['Reposição total','reposTotal','n'],['Status BLQ','bloqueado'],
+  ['Sugestão calc. (un)','qtdSugCalc','n'],['Sugestão calc. (R$)','valSugCalc','m'],
+  ['Total do pedido','totalPedido','m'],['Frequência','semMensal'],['Dia da semana','diaSemana'],
+  ['Gera pedido','geraPedido'],['Data entrega','dataEntrega','d'],['Status','status','full'],
+];
+const M={};D.forEach(r=>M[r.produto]=r);
+function openModal(cod){
+  const r=M[cod];if(!r)return;
+  document.getElementById('md-desc').textContent=r.descricao;
+  document.getElementById('md-code').innerHTML='<span class="code">'+esc(r.produto)+'</span> · '+esc(r.nome);
+  document.getElementById('md-grid').innerHTML=FIELDS.map(f=>{
+    let v=r[f[1]];const t=f[2];
+    if(t==='m')v=moeda(v); else if(t==='n')v=fmt(v); else if(t==='n1')v=fmt1(v); else if(t==='d')v=dt(v); else v=esc(v||'—');
+    return `<div class="mf ${f[2]==='full'?'full':''}"><div class="k">${f[0]}</div><div class="v">${v}</div></div>`;
+  }).join('');
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal(){document.getElementById('modal').classList.remove('show');}
+document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')closeModal();};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// ===== NAV =====
+function show(v){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.v===v));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('active',s.id==='v-'+v));
+  if(v==='estoque') renderEstoque();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>show(t.dataset.v));
+renderEstoque();
+</script>
+</body>
+</html>
