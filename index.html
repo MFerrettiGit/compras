@@ -53,10 +53,10 @@ h2.sec .dot{width:9px;height:9px;border-radius:50%;background:var(--azul)}
 .kpi.red .val{color:var(--red)} .kpi.amber .val{color:var(--amber)} .kpi.green .val{color:var(--green)}
 .kpi .hint{font-size:11.5px;color:var(--muted)}
 .kpi.clickable{cursor:pointer;transition:.15s} .kpi.clickable:hover{transform:translateY(-2px);border-color:var(--azul);box-shadow:0 6px 16px rgba(0,0,0,.5)}
-.kpi.clickable .go{position:absolute;right:14px;bottom:12px;font-size:11px;color:var(--azul-light);font-weight:700;opacity:.0;transition:.15s}
+.kpi.clickable .go{position:absolute;right:14px;bottom:12px;font-size:11px;color:var(--azul-light);font-weight:700;opacity:0;transition:.15s}
 .kpi.clickable:hover .go{opacity:1}
 /* ALERT BLOCKS — empilha se não couber lado a lado */
-.alert-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,600px),1fr));gap:16px;margin-bottom:8px}
+.alert-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,700px),1fr));gap:16px;margin-bottom:8px}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;scroll-margin-top:70px}
 .panel-h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px}
 .panel-h .ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:16px}
@@ -74,13 +74,12 @@ tbody td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04);vertical
 tbody tr:hover{background:var(--card-2)}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 td.desc{white-space:normal;min-width:170px;font-weight:600;color:var(--txt)}
-td.marca{white-space:normal;max-width:150px;color:var(--muted);font-size:11.3px}
+td.marca{white-space:normal;max-width:160px;color:var(--muted);font-size:11.3px}
 td.code{font-family:"Consolas",monospace;font-size:11.5px;color:var(--azul-light);font-weight:600;white-space:nowrap}
 /* GRUPO (marca) */
 tr.grp td{background:#0f1422;border-top:2px solid var(--azul);padding:8px 12px;position:sticky;top:33px;z-index:1}
 tr.grp .grp-name{font-weight:800;color:var(--azul-light);font-size:12.5px}
 tr.grp .grp-meta{color:var(--muted);font-size:11.5px;margin-left:8px}
-tr.grp .grp-ped{color:var(--green);font-size:11.5px;font-weight:700;margin-left:8px}
 .badge{display:inline-block;padding:1px 8px;border-radius:20px;font-size:11px;font-weight:700}
 .b-A{background:var(--blue-bg);color:var(--azul-light)} .b-B{background:var(--green-bg);color:var(--green)} .b-C{background:var(--amber-bg);color:var(--amber)} .b-D{background:rgba(255,255,255,.08);color:var(--muted)}
 .b-red{background:var(--red-bg);color:var(--red)} .b-amber{background:var(--amber-bg);color:var(--amber)} .b-green{background:var(--green-bg);color:var(--green)} .b-grey{background:rgba(255,255,255,.08);color:var(--muted)}
@@ -100,8 +99,8 @@ tr.grp .grp-ped{color:var(--green);font-size:11.5px;font-weight:700;margin-left:
 .forn-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);border-left:4px solid var(--line)}
 .forn-card.go{border-left-color:var(--green)}
 .forn-card h3{margin:0 0 4px;font-size:14px;line-height:1.3}
-.forn-card .pedido{font-size:24px;font-weight:800;color:var(--azul-light);margin:8px 0 2px}
-.forn-card.no .pedido{color:var(--muted)}
+.forn-card .big{font-size:24px;font-weight:800;color:var(--azul-light);margin:8px 0 2px}
+.forn-card.no .big{color:var(--muted)}
 .forn-meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11.5px;color:var(--muted);margin-top:8px}
 .forn-meta b{color:var(--txt)}
 .forn-flag{display:inline-block;font-size:11px;font-weight:700;border-radius:20px;padding:2px 9px;margin-top:8px}
@@ -122,6 +121,7 @@ tr.grp .grp-ped{color:var(--green);font-size:11.5px;font-weight:700;margin-left:
 .mf .k{font-size:11px;color:var(--muted);font-weight:600}
 .mf .v{font-size:14px;font-weight:600;margin-top:1px}
 .mf.full{grid-column:1/-1}
+.mf.hl .v{color:var(--azul-light)}
 footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
 @media(max-width:640px){.modal-grid{grid-template-columns:1fr}.head-meta{margin-left:0;text-align:left;width:100%}}
 </style>
@@ -163,7 +163,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
   <!-- ============ ESTOQUE ============ -->
   <section class="view" id="v-estoque">
     <h2 class="sec"><span class="dot"></span>Estoque e seus detalhes</h2>
-    <p class="sub">Produtos agrupados por marca (fornecedor). Busque, filtre e ordene clicando nas colunas. Clique numa linha para ver os 54 campos.</p>
+    <p class="sub">Produtos agrupados por marca (fornecedor). Busque, filtre e ordene clicando nas colunas. Clique numa linha para ver todos os campos.</p>
     <div class="toolbar">
       <input type="search" id="q-estoque" placeholder="🔎 Buscar produto, código, descrição ou marca...">
       <select id="f-forn"><option value="">Todas as marcas (fornecedores)</option></select>
@@ -172,8 +172,9 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
         <option value="">Situação: todas</option>
         <option value="zerado">Zerados</option>
         <option value="baixo">Abaixo do ponto de pedido</option>
-        <option value="alto">Estoque alto (giro &gt; 90d)</option>
+        <option value="alto">Estoque alto (saldo &gt; 90 dias)</option>
         <option value="pedir">Geram pedido</option>
+        <option value="semtab">Sem tabela de preço</option>
       </select>
       <span class="spacer"></span>
       <span class="tag" id="cnt-estoque"></span>
@@ -184,8 +185,8 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
 
   <!-- ============ FORNECEDOR ============ -->
   <section class="view" id="v-fornecedor">
-    <h2 class="sec"><span class="dot"></span>Total de compra por fornecedor / marca</h2>
-    <p class="sub">Valor do pedido sugerido pelo sistema para cada fornecedor (campo "Total do Pedido"). Verde = aconselhado pedir agora.</p>
+    <h2 class="sec"><span class="dot"></span>Fornecedores / marcas</h2>
+    <p class="sub">Quadro por fornecedor (marca): itens em linha e quantos precisam de atenção de compra. Verde = tem produto abaixo do ponto ou marcado para gerar pedido.</p>
     <div class="kpis" id="kpis-forn"></div>
     <div class="forn-grid" id="forn-grid"></div>
   </section>
@@ -193,14 +194,14 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
   <!-- ============ ATENÇÃO COMPRA ============ -->
   <section class="view" id="v-compra">
     <h2 class="sec"><span class="dot"></span>Produtos que precisam de atenção — Compra</h2>
-    <p class="sub">Onde falta produto: precisa repor, precisa pedido ou está zerado. Ordenado por marca.</p>
+    <p class="sub">Onde falta produto: precisa repor, precisa pedido, está zerado ou sem tabela de preço. Ordenado por marca.</p>
     <div class="alert-grid" id="compra-panels"></div>
   </section>
 
   <!-- ============ ATENÇÃO VENDA ============ -->
   <section class="view" id="v-venda">
     <h2 class="sec"><span class="dot"></span>Produtos que precisam de atenção — Venda</h2>
-    <p class="sub">Onde sobra produto: estoque alto, capital parado e itens de giro muito lento. Ordenado por marca.</p>
+    <p class="sub">Onde sobra produto: estoque alto e itens de giro muito lento. Ordenado por marca.</p>
     <div class="alert-grid" id="venda-panels"></div>
   </section>
 </main>
@@ -221,11 +222,13 @@ const POUCA_CX  = 5;       // <= caixas = pouca quantidade física
 // ---- helpers ----
 const fmt = n => (n||0).toLocaleString('pt-BR',{maximumFractionDigits:0});
 const fmt1= n => (n||0).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
-const moeda = n => 'R$ '+(n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 const dt = s => s? s.split('-').reverse().join('/') : '—';
 const esc = s => (''+(s??'')).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const abcBadge = a => `<span class="badge b-${a||'D'}">${a||'-'}</span>`;
 const byMarca = (metric)=> (a,b)=> a.nome.localeCompare(b.nome) || (metric? metric(b)-metric(a) : 0);
+// venda em 30 dias = venda diária (qtde vendida / dias do período) × 30
+const vende30 = r => (r.qtdeVendidaDia||0)*30;
+D.forEach(r=>{ r.__v30 = Math.round(vende30(r)); });
 
 // ---- classificadores ----
 const isZeradoLinha = r => r.bloqueado==='Em Uso' && r.saldoAtual<=0;
@@ -234,7 +237,7 @@ const isAbaixoPonto = r => r.pontoPedido>0 && r.saldoAtual < r.pontoPedido;
 const isAltoGiro = r => r.giro > GIRO_ALTO;
 const isGeraPedido = r => r.geraPedido==='SIM';
 const isSlowMover = r => r.giro > GIRO_ALTO && r.saldoAtualCx>0 && r.saldoAtualCx <= POUCA_CX;
-const valorEstoque = r => (r.saldoAtual||0) * (r.custoStd||0);
+const isSemTabela = r => r.status==='ITEM SEM TABELA DE PRECO';
 
 // ---- agregados ----
 const lowStock   = D.filter(isBaixoSemPedido);
@@ -242,23 +245,21 @@ const zerados    = D.filter(isZeradoLinha);
 const altoGiro   = D.filter(isAltoGiro);
 const slowMovers = D.filter(isSlowMover);
 const geraPedido = D.filter(isGeraPedido);
-const semTabela  = D.filter(r=>r.status==='ITEM SEM TABELA DE PRECO');
+const semTabela  = D.filter(isSemTabela);
+const abaixoPonto= D.filter(isAbaixoPonto);
+const curvaDalto = D.filter(r=>r.abc==='D'&&r.giro>GIRO_ALTO);
 
 // fornecedores (marca)
 const fornMap = {};
 D.forEach(r=>{
   const k=r.nome;
-  if(!fornMap[k]) fornMap[k]={nome:k,cod:r.codForn,pedido:r.totalPedido||0,itens:0,abaixo:0,zerados:0,gera:0,freq:r.semMensal==='S'?'Semanal':'Mensal',dia:r.diaSemana,vlrEstoque:0};
+  if(!fornMap[k]) fornMap[k]={nome:k,cod:r.codForn,itens:0,abaixo:0,zerados:0,gera:0,semtab:0,freq:r.semMensal==='S'?'Semanal':'Mensal',dia:r.diaSemana};
   const f=fornMap[k];
-  f.itens++; if(isAbaixoPonto(r))f.abaixo++; if(isZeradoLinha(r))f.zerados++; if(isGeraPedido(r))f.gera++;
-  f.vlrEstoque+=valorEstoque(r);
-  if((r.totalPedido||0)>f.pedido) f.pedido=r.totalPedido||0;
+  f.itens++; if(isAbaixoPonto(r))f.abaixo++; if(isZeradoLinha(r))f.zerados++; if(isGeraPedido(r))f.gera++; if(isSemTabela(r))f.semtab++;
 });
-const forns = Object.values(fornMap).sort((a,b)=>b.pedido-a.pedido);
-const fornAconselhados = forns.filter(f=>f.pedido>0);
-
-const totEstoque = D.reduce((s,r)=>s+valorEstoque(r),0);
-const totPedido  = forns.reduce((s,f)=>s+f.pedido,0);
+const fAconselha = f => (f.abaixo>0 || f.gera>0);
+const forns = Object.values(fornMap).sort((a,b)=> (b.abaixo+b.gera)-(a.abaixo+a.gera) || a.nome.localeCompare(b.nome));
+const fornAconselhados = forns.filter(fAconselha);
 
 // ---- header meta ----
 document.getElementById('m-skus').textContent = D.length;
@@ -267,14 +268,14 @@ const dataGer = "12/06/2026 14:22";
 document.getElementById('m-data').textContent = dataGer;
 document.getElementById('foot-data').textContent = 'Gerado em '+dataGer;
 document.getElementById('t-estoque').textContent = D.length;
-document.getElementById('t-compra').textContent = lowStock.length+zerados.length+geraPedido.length;
+document.getElementById('t-compra').textContent = lowStock.length+zerados.length+geraPedido.length+semTabela.length;
 document.getElementById('t-venda').textContent = altoGiro.length;
 
 // ===== VISÃO GERAL: cartões-pergunta (clicáveis → painel da informação) =====
 const qcards = [
   {cls:'red',  val:lowStock.length,  lbl:'Estoque baixo e SEM pedido', hint:'Abaixo do ponto de pedido e nada programado pra chegar', go:()=>gotoPanel('compra','pan-baixo')},
   {cls:'red',  val:zerados.length,   lbl:'Em linha e zerados',          hint:'Produto "Em Uso" com saldo 0', go:()=>gotoPanel('compra','pan-zero')},
-  {cls:'green',val:fornAconselhados.length, lbl:'Fornecedores p/ pedir', hint:'Com pedido sugerido pelo sistema', go:()=>gotoPanel('fornecedor','forn-grid')},
+  {cls:'green',val:fornAconselhados.length, lbl:'Fornecedores p/ pedir', hint:'Com itens abaixo do ponto ou marcados p/ pedido', go:()=>gotoPanel('fornecedor','forn-grid')},
   {cls:'amber',val:altoGiro.length,  lbl:'Estoque alto', hint:'Mais de '+GIRO_ALTO+' dias de estoque', go:()=>gotoPanel('venda','pan-alto')},
   {cls:'amber',val:slowMovers.length,lbl:'Pouca qtd, muitos dias', hint:'≤ '+POUCA_CX+' cx mas giro lento', go:()=>gotoPanel('venda','pan-slow')},
 ];
@@ -282,43 +283,57 @@ document.getElementById('kpis-q').innerHTML = qcards.map(c=>
   `<div class="kpi ${c.cls} clickable"><div class="lbl">${c.lbl}</div><div class="val">${c.val}</div><div class="hint">${c.hint}</div><div class="go">ver lista →</div></div>`).join('');
 [...document.querySelectorAll('#kpis-q .kpi')].forEach((el,i)=>el.onclick=qcards[i].go);
 
-// resumo estoque
+// ===== Resumo do estoque: curvas A/B/C/D + sem tabela (todos clicáveis) =====
+const cnt=a=>D.filter(r=>r.abc===a).length;
 const gcards = [
-  {lbl:'Valor total em estoque', val:moeda(totEstoque), hint:'Saldo × custo padrão'},
-  {lbl:'Pedido sugerido total', val:moeda(totPedido), hint:'Soma dos pedidos por fornecedor', cls:'green'},
-  {lbl:'Itens curva A', val:D.filter(r=>r.abc==='A').length, hint:'Mais relevantes no faturamento'},
-  {lbl:'Itens sem tabela de preço', val:semTabela.length, hint:'Status "ITEM SEM TABELA DE PRECO"', cls:'amber'},
+  {lbl:'Itens curva A', val:cnt('A'), hint:'Mais relevantes no faturamento', go:()=>goCurva('A')},
+  {lbl:'Itens curva B', val:cnt('B'), hint:'Relevância média-alta', go:()=>goCurva('B')},
+  {lbl:'Itens curva C', val:cnt('C'), hint:'Relevância média-baixa', go:()=>goCurva('C')},
+  {lbl:'Itens curva D', val:cnt('D'), hint:'Menos relevantes', go:()=>goCurva('D')},
+  {lbl:'Itens sem tabela de preço', val:semTabela.length, hint:'Status "ITEM SEM TABELA DE PRECO"', cls:'amber', go:()=>gotoPanel('compra','pan-semtab')},
 ];
 document.getElementById('kpis-geral').innerHTML = gcards.map(c=>
-  `<div class="kpi ${c.cls||''}"><div class="lbl">${c.lbl}</div><div class="val" style="font-size:24px">${c.val}</div><div class="hint">${c.hint}</div></div>`).join('');
+  `<div class="kpi ${c.cls||''} clickable"><div class="lbl">${c.lbl}</div><div class="val" style="font-size:26px">${c.val}</div><div class="hint">${c.hint}</div><div class="go">ver lista →</div></div>`).join('');
+[...document.querySelectorAll('#kpis-geral .kpi')].forEach((el,i)=>el.onclick=gcards[i].go);
+
+// ===== Colunas-padrão de produto (presentes em TODA análise) =====
+function giroCell(g){const w=Math.min(60,Math.round((g/180)*60));const col=g>GIRO_ALTO?'var(--amber)':g<15?'var(--red)':'var(--azul)';
+  return `<span style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap"><b>${fmt(g)}</b><span class="dias-bar" style="width:${w}px;background:${col}"></span></span>`;}
+const cMarca={t:'Marca',cls:'marca',render:r=>esc(r.nome)};
+const cCode ={t:'Código',cls:'code',render:r=>esc(r.produto)};
+const cDesc ={t:'Produto',cls:'desc',render:r=>esc(r.descricao)};
+const cAbc  ={t:'ABC',render:r=>abcBadge(r.abc)};
+const cUn   ={t:'Saldo (un)',num:1,render:r=>fmt(r.saldoAtual)};
+const cCx   ={t:'Saldo (cx)',num:1,render:r=>fmt1(r.saldoAtualCx)};
+const cDias ={t:'Saldo (dias)',num:1,render:r=>giroCell(r.giro)};
+const cV30  ={t:'Vende/30 dias',num:1,render:r=>fmt(r.__v30)};
+const PCOLS=[cMarca,cCode,cDesc,cAbc,cUn,cCx,cDias,cV30];   // padrão dos painéis
 
 // ===== ESTOQUE: tabela agrupada por marca =====
 const fSel=document.getElementById('f-forn');
 [...new Set(D.map(r=>r.nome))].sort().forEach(n=>{const o=document.createElement('option');o.textContent=n;fSel.appendChild(o);});
+function statusBadge(r){
+  if(isZeradoLinha(r)) return '<span class="badge b-red">Zerado</span>';
+  if(isBaixoSemPedido(r)) return '<span class="badge b-red">Baixo s/ pedido</span>';
+  if(isSemTabela(r)) return '<span class="badge b-amber">Sem tabela</span>';
+  if(isGeraPedido(r)) return '<span class="badge b-green">Gera pedido</span>';
+  if(isAltoGiro(r)) return '<span class="badge b-amber">Estoque alto</span>';
+  if(isAbaixoPonto(r)) return '<span class="badge b-amber">Abaixo ponto</span>';
+  return '<span class="badge b-grey">OK</span>';
+}
 const COLS = [
   {k:'produto',t:'Código',cls:'code'},
   {k:'descricao',t:'Produto',cls:'desc'},
   {k:'abc',t:'ABC',render:r=>abcBadge(r.abc)},
   {k:'saldoAtual',t:'Saldo (un)',num:1,render:r=>fmt(r.saldoAtual)},
   {k:'saldoAtualCx',t:'Saldo (cx)',num:1,render:r=>fmt1(r.saldoAtualCx)},
+  {k:'giro',t:'Saldo (dias)',num:1,render:r=>giroCell(r.giro)},
+  {k:'__v30',t:'Vende/30 dias',num:1,render:r=>fmt(r.__v30)},
   {k:'pontoPedido',t:'Ponto ped.',num:1,render:r=>fmt(r.pontoPedido)},
-  {k:'giro',t:'Estoque (dias)',num:1,render:r=>giroCell(r.giro)},
-  {k:'qtdeVendidaDia',t:'Venda/dia',num:1,render:r=>fmt1(r.qtdeVendidaDia)},
   {k:'qtdeEntrada',t:'Chegando',num:1,render:r=>fmt(r.qtdeEntrada)},
-  {k:'qtdSugCalc',t:'Sugestão (un)',num:1,render:r=>r.qtdSugCalc>0?'<b>'+fmt(r.qtdSugCalc)+'</b>':'—'},
-  {k:'ultPrcCompra',t:'Últ. compra',num:1,render:r=>moeda(r.ultPrcCompra)},
+  {k:'ultPrcCompra',t:'Últ. preço compra',num:1,render:r=>'R$ '+fmt1(r.ultPrcCompra)},
   {k:'status',t:'Situação',render:r=>statusBadge(r)},
 ];
-function giroCell(g){const w=Math.min(60,Math.round((g/180)*60));const col=g>GIRO_ALTO?'var(--amber)':g<15?'var(--red)':'var(--azul)';
-  return `<span style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap"><b>${fmt(g)}</b><span class="dias-bar" style="width:${w}px;background:${col}"></span></span>`;}
-function statusBadge(r){
-  if(isZeradoLinha(r)) return '<span class="badge b-red">Zerado</span>';
-  if(isBaixoSemPedido(r)) return '<span class="badge b-red">Baixo s/ pedido</span>';
-  if(isGeraPedido(r)) return '<span class="badge b-green">Gera pedido</span>';
-  if(isAltoGiro(r)) return '<span class="badge b-amber">Estoque alto</span>';
-  if(isAbaixoPonto(r)) return '<span class="badge b-amber">Abaixo ponto</span>';
-  return '<span class="badge b-grey">OK</span>';
-}
 let sortK='descricao',sortDir=1;
 function filtered(){
   const q=document.getElementById('q-estoque').value.toLowerCase().trim();
@@ -330,6 +345,7 @@ function filtered(){
     if(fs==='baixo' && !isAbaixoPonto(r)) return false;
     if(fs==='alto' && !isAltoGiro(r)) return false;
     if(fs==='pedir' && !isGeraPedido(r)) return false;
+    if(fs==='semtab' && !isSemTabela(r)) return false;
     if(q && !(r.produto.toLowerCase().includes(q)||r.descricao.toLowerCase().includes(q)||r.nome.toLowerCase().includes(q))) return false;
     return true;
   });
@@ -338,7 +354,6 @@ function sortFn(a,b){let x=a[sortK],y=b[sortK];if(typeof x==='string'){return x.
 function renderEstoque(){
   const rows=filtered();
   document.getElementById('cnt-estoque').textContent=rows.length+' de '+D.length+' produtos';
-  // agrupa por marca (fornecedor)
   const groups={};
   rows.forEach(r=>{(groups[r.nome]=groups[r.nome]||[]).push(r);});
   const names=Object.keys(groups).sort((a,b)=>a.localeCompare(b));
@@ -346,8 +361,7 @@ function renderEstoque(){
   if(!rows.length) h+=`<tr><td colspan="${COLS.length}"><div class="empty">Nada encontrado.</div></td></tr>`;
   names.forEach(nm=>{
     const g=groups[nm].slice().sort(sortFn);
-    const ped=(fornMap[nm]&&fornMap[nm].pedido)||0;
-    h+=`<tr class="grp"><td colspan="${COLS.length}"><span class="grp-name">📦 ${esc(nm)}</span><span class="grp-meta">${g.length} ${g.length>1?'itens':'item'}</span>${ped>0?`<span class="grp-ped">pedido ${moeda(ped)}</span>`:''}</td></tr>`;
+    h+=`<tr class="grp"><td colspan="${COLS.length}"><span class="grp-name">📦 ${esc(nm)}</span><span class="grp-meta">${g.length} ${g.length>1?'itens':'item'}</span></td></tr>`;
     g.forEach(r=>{h+=`<tr onclick='openModal("${r.produto}")' style="cursor:pointer">`+COLS.map(c=>`<td class="${c.cls||''} ${c.num?'num':''}">${c.render?c.render(r):esc(r[c.k])}</td>`).join('')+'</tr>';});
   });
   h+='</tbody></table>';
@@ -355,6 +369,7 @@ function renderEstoque(){
   box.querySelectorAll('th.sortable').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(sortK===k)sortDir*=-1;else{sortK=k;sortDir=1;}renderEstoque();});
 }
 ['q-estoque','f-forn','f-abc','f-sit'].forEach(id=>document.getElementById(id).addEventListener('input',renderEstoque));
+function goCurva(c){document.getElementById('f-abc').value=c;document.getElementById('f-sit').value='';document.getElementById('f-forn').value='';document.getElementById('q-estoque').value='';show('estoque');renderEstoque();}
 
 // CSV
 document.getElementById('btn-csv').onclick=()=>{
@@ -368,85 +383,57 @@ document.getElementById('btn-csv').onclick=()=>{
 document.getElementById('kpis-forn').innerHTML=[
   {lbl:'Fornecedores / marcas',val:forns.length},
   {lbl:'Aconselhados a pedir',val:fornAconselhados.length,cls:'green'},
-  {lbl:'Total a comprar',val:moeda(totPedido),cls:'green'},
-  {lbl:'Sem pedido no momento',val:forns.length-fornAconselhados.length},
+  {lbl:'Sem necessidade agora',val:forns.length-fornAconselhados.length},
 ].map(c=>`<div class="kpi ${c.cls||''}"><div class="lbl">${c.lbl}</div><div class="val" style="font-size:24px">${c.val}</div></div>`).join('');
 document.getElementById('forn-grid').innerHTML=forns.map(f=>{
-  const go=f.pedido>0;
+  const go=fAconselha(f);
   return `<div class="forn-card ${go?'go':'no'}">
     <h3>${esc(f.nome)}</h3>
-    <div class="tag">Cód. ${esc(f.cod)} • ${f.itens} itens</div>
-    <div class="pedido">${moeda(f.pedido)}</div>
-    <div class="tag">total do pedido sugerido</div>
+    <div class="tag">Cód. ${esc(f.cod)} • ${f.itens} itens • ${f.freq}${f.dia?' ('+esc(f.dia)+')':''}</div>
+    <div class="big">${f.abaixo}</div>
+    <div class="tag">itens abaixo do ponto de pedido</div>
     <div class="forn-meta">
-      <span>Abaixo do ponto: <b>${f.abaixo}</b></span>
       <span>Zerados: <b>${f.zerados}</b></span>
-      <span>Gera pedido: <b>${f.gera}</b></span>
-      <span>Estoque: <b>${moeda(f.vlrEstoque)}</b></span>
-      <span>Freq.: <b>${f.freq}${f.dia?' ('+esc(f.dia)+')':''}</b></span>
+      <span>Geram pedido: <b>${f.gera}</b></span>
+      <span>Sem tabela: <b>${f.semtab}</b></span>
     </div>
-    <span class="forn-flag ${go?'flag-go':'flag-no'}">${go?'✅ Aconselhado pedir':'Sem pedido agora'}</span>
+    <span class="forn-flag ${go?'flag-go':'flag-no'}">${go?'✅ Aconselhado pedir':'Sem necessidade agora'}</span>
   </div>`;}).join('');
 
-// ===== PAINÉIS ATENÇÃO (ordenados por marca) =====
-function buildPanel(id,icon,iccls,title,arr,cols){
+// ===== PAINÉIS ATENÇÃO (colunas-padrão + ordenados por marca) =====
+function buildPanel(id,icon,iccls,title,arr){
   return `<div class="panel" id="${id}"><div class="panel-h"><div class="ic ${iccls}">${icon}</div>${title}<span class="cnt ${iccls}">${arr.length}</span></div>
-  <div class="panel-b tall">${arr.length? `<table><thead><tr>${cols.map(c=>`<th class="${c.num?'num':''}">${c.t}</th>`).join('')}</tr></thead><tbody>`+
-    arr.map(r=>`<tr onclick='openModal("${r.produto}")' style="cursor:pointer">${cols.map(c=>`<td class="${c.cls||''} ${c.num?'num':''}">${c.render(r)}</td>`).join('')}</tr>`).join('')+
+  <div class="panel-b tall">${arr.length? `<table><thead><tr>${PCOLS.map(c=>`<th class="${c.num?'num':''}">${c.t}</th>`).join('')}</tr></thead><tbody>`+
+    arr.map(r=>`<tr onclick='openModal("${r.produto}")' style="cursor:pointer">${PCOLS.map(c=>`<td class="${c.cls||''} ${c.num?'num':''}">${c.render(r)}</td>`).join('')}</tr>`).join('')+
     `</tbody></table>` : '<div class="empty">Nenhum produto nesta condição 🎉</div>'}</div></div>`;
 }
-const cMarca={t:'Marca',cls:'marca',render:r=>esc(r.nome)};
-const cCode={t:'Código',cls:'code',render:r=>esc(r.produto)};
-const cDesc={t:'Produto',cls:'desc',render:r=>esc(r.descricao)};
-const cAbc ={t:'ABC',render:r=>abcBadge(r.abc)};
-
 document.getElementById('compra-panels').innerHTML =
-  buildPanel('pan-baixo','⛔','red','Estoque baixo e SEM reposição programada',
-     lowStock.slice().sort(byMarca(r=>r.pontoPedido-r.saldoAtual)),
-     [cMarca,cCode,cDesc,cAbc,{t:'Saldo',num:1,render:r=>fmt(r.saldoAtual)},{t:'Ponto',num:1,render:r=>fmt(r.pontoPedido)},{t:'Venda/dia',num:1,render:r=>fmt1(r.qtdeVendidaDia)}]) +
-  buildPanel('pan-zero','0️⃣','red','Em linha e zerados',
-     zerados.slice().sort(byMarca(r=>r.qtdeVendidaDia)),
-     [cMarca,cCode,cDesc,cAbc,{t:'Venda/dia',num:1,render:r=>fmt1(r.qtdeVendidaDia)},{t:'Últ. compra',num:1,render:r=>dt(r.datUltCompra)}]) +
-  buildPanel('pan-gera','📝','green','Itens que geram pedido agora',
-     geraPedido.slice().sort(byMarca(r=>r.valSugCalc)),
-     [cMarca,cCode,cDesc,{t:'Sug. (un)',num:1,render:r=>fmt(r.qtdSugCalc)},{t:'Sug. (R$)',num:1,render:r=>moeda(r.valSugCalc)}]) +
-  buildPanel('pan-abaixo','🔻','amber','Abaixo do ponto de pedido',
-     D.filter(isAbaixoPonto).sort(byMarca(r=>r.pontoPedido-r.saldoAtual)),
-     [cMarca,cCode,cDesc,cAbc,{t:'Saldo',num:1,render:r=>fmt(r.saldoAtual)},{t:'Ponto',num:1,render:r=>fmt(r.pontoPedido)},{t:'Chegando',num:1,render:r=>fmt(r.qtdeEntrada)}]);
+  buildPanel('pan-baixo','⛔','red','Estoque baixo e SEM reposição programada', lowStock.slice().sort(byMarca(r=>r.pontoPedido-r.saldoAtual))) +
+  buildPanel('pan-zero','0️⃣','red','Em linha e zerados', zerados.slice().sort(byMarca(r=>r.__v30))) +
+  buildPanel('pan-gera','📝','green','Itens marcados para gerar pedido', geraPedido.slice().sort(byMarca(r=>r.__v30))) +
+  buildPanel('pan-abaixo','🔻','amber','Abaixo do ponto de pedido', abaixoPonto.slice().sort(byMarca(r=>r.pontoPedido-r.saldoAtual))) +
+  buildPanel('pan-semtab','🏷️','amber','Sem tabela de preço', semTabela.slice().sort(byMarca(r=>r.__v30)));
 
 document.getElementById('venda-panels').innerHTML =
-  buildPanel('pan-alto','📦','amber','Estoque alto (mais de '+GIRO_ALTO+' dias)',
-     altoGiro.slice().sort(byMarca(r=>r.giro)),
-     [cMarca,cCode,cDesc,cAbc,{t:'Estoque (dias)',num:1,render:r=>giroCell(r.giro)},{t:'Saldo (cx)',num:1,render:r=>fmt1(r.saldoAtualCx)},{t:'Vlr estoque',num:1,render:r=>moeda(valorEstoque(r))}]) +
-  buildPanel('pan-slow','🐌','amber','Pouca quantidade, mas muitos dias de estoque',
-     slowMovers.slice().sort(byMarca(r=>r.giro)),
-     [cMarca,cCode,cDesc,cAbc,{t:'Saldo (cx)',num:1,render:r=>fmt1(r.saldoAtualCx)},{t:'Estoque (dias)',num:1,render:r=>giroCell(r.giro)},{t:'Venda/dia',num:1,render:r=>fmt1(r.qtdeVendidaDia)}]) +
-  buildPanel('pan-capital','💰','blue','Maior capital parado (valor em estoque)',
-     [...D].sort((a,b)=>valorEstoque(b)-valorEstoque(a)).slice(0,25),
-     [cMarca,cCode,cDesc,cAbc,{t:'Saldo (un)',num:1,render:r=>fmt(r.saldoAtual)},{t:'Estoque (dias)',num:1,render:r=>fmt(r.giro)},{t:'Vlr estoque',num:1,render:r=>moeda(valorEstoque(r))}]) +
-  buildPanel('pan-curvaD','🛑','grey','Curva D com estoque alto (candidatos a reduzir)',
-     D.filter(r=>r.abc==='D'&&r.giro>GIRO_ALTO).sort(byMarca(r=>valorEstoque(r))),
-     [cMarca,cCode,cDesc,{t:'Estoque (dias)',num:1,render:r=>fmt(r.giro)},{t:'Saldo (un)',num:1,render:r=>fmt(r.saldoAtual)},{t:'Vlr estoque',num:1,render:r=>moeda(valorEstoque(r))}]);
+  buildPanel('pan-alto','📦','amber','Estoque alto (mais de '+GIRO_ALTO+' dias)', altoGiro.slice().sort(byMarca(r=>r.giro))) +
+  buildPanel('pan-slow','🐌','amber','Pouca quantidade, mas muitos dias de estoque', slowMovers.slice().sort(byMarca(r=>r.giro))) +
+  buildPanel('pan-curvaD','🛑','grey','Curva D com estoque alto (candidatos a reduzir)', curvaDalto.slice().sort(byMarca(r=>r.giro)));
 
 // ===== MODAL =====
 const FIELDS=[
+  ['Saldo atual (un)','saldoAtual','n','hl'],['Saldo atual (cx)','saldoAtualCx','n1','hl'],
+  ['Saldo em dias / giro','giro','n1','hl'],['Vende em 30 dias (calc.)','__v30','n','hl'],
   ['Fornecedor / marca','nome'],['Cód. fornecedor','codForn'],['Loja','loja'],['Cond. pagamento','cond'],
   ['Grupo','grupo'],['Tipo','tipo'],['Unidade','unidade'],['Tabela de preço','tabela'],
   ['Preço de tabela','precoTabela','m'],['Qtd. p/ embalagem','qtdEmbalagem','n'],
   ['Estoque segurança','estoqueSeguranca','n'],['Ponto de pedido','pontoPedido','n'],
   ['Última compra','datUltCompra','d'],['Qtde chegando','qtdeEntrada','n'],
-  ['Período análise (dias)','qtdeDias','n'],['Qtde vendida','qtdeVendida','n'],['Vendida (cx)','qtdeVendidaCx','n1'],
+  ['Período análise (dias)','qtdeDias','n'],['Qtde vendida (período)','qtdeVendida','n'],['Vendida (cx)','qtdeVendidaCx','n1'],
   ['Venda por dia','qtdeVendidaDia','n1'],['Valor faturado','faturado','m'],
-  ['Saldo atual (un)','saldoAtual','n'],['Saldo atual (cx)','saldoAtualCx','n1'],
   ['Reservada','qtdeReservada','n'],['Empenhada','qtdeEmpenhada','n'],['Em pedido venda','qtdeEmPedidoVenda','n'],
-  ['Estoque (dias) / giro','giro','n1'],['Sugestão','sugestao','n'],['Sugestão LE','sugestaoLE','n'],
-  ['Faturamento','faturamento','m'],['Custo total','custoTotal','m'],['Custo padrão','custoStd','m'],
-  ['Último preço compra','ultPrcCompra','m'],['Estoque máximo','estoqueMax','n'],
-  ['% Curva','pctCurva','n1'],['Curva ABC','abc'],['Rank','rank'],['Prazo entrega (dias)','prazoEntrega','n'],
-  ['Reposição total','reposTotal','n'],['Status BLQ','bloqueado'],
-  ['Sugestão calc. (un)','qtdSugCalc','n'],['Sugestão calc. (R$)','valSugCalc','m'],
-  ['Total do pedido','totalPedido','m'],['Frequência','semMensal'],['Dia da semana','diaSemana'],
-  ['Gera pedido','geraPedido'],['Data entrega','dataEntrega','d'],['Status','status','full'],
+  ['Último preço compra','ultPrcCompra','m'],['% Curva','pctCurva','n1'],['Curva ABC','abc'],['Rank','rank'],
+  ['Prazo entrega (dias)','prazoEntrega','n'],['Status BLQ','bloqueado'],['Frequência','semMensal'],
+  ['Dia da semana','diaSemana'],['Gera pedido','geraPedido'],['Data entrega','dataEntrega','d'],['Status','status','full'],
 ];
 const M={};D.forEach(r=>M[r.produto]=r);
 function openModal(cod){
@@ -455,8 +442,9 @@ function openModal(cod){
   document.getElementById('md-code').innerHTML='<span class="code">'+esc(r.produto)+'</span> · '+esc(r.nome);
   document.getElementById('md-grid').innerHTML=FIELDS.map(f=>{
     let v=r[f[1]];const t=f[2];
-    if(t==='m')v=moeda(v); else if(t==='n')v=fmt(v); else if(t==='n1')v=fmt1(v); else if(t==='d')v=dt(v); else v=esc(v||'—');
-    return `<div class="mf ${f[2]==='full'?'full':''}"><div class="k">${f[0]}</div><div class="v">${v}</div></div>`;
+    if(t==='m')v='R$ '+fmt1(v); else if(t==='n')v=fmt(v); else if(t==='n1')v=fmt1(v); else if(t==='d')v=dt(v); else v=esc(v||'—');
+    const hl=f[3]==='hl'?' hl':''; const full=f[3]==='full'||f[2]==='full'?' full':'';
+    return `<div class="mf${hl}${full}"><div class="k">${f[0]}</div><div class="v">${v}</div></div>`;
   }).join('');
   document.getElementById('modal').classList.add('show');
 }
