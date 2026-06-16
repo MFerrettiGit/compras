@@ -284,7 +284,7 @@ const curvaDalto = D.filter(r=>r.abc==='D'&&r.giro>GIRO_ALTO);
 // ---- header meta ----
 document.getElementById('m-skus').textContent = D.length;
 document.getElementById('m-forn').textContent = new Set(D.map(r=>r.nome)).size;
-const dataGer = "12/06/2026 14:22";
+const dataGer = (window.ESTOQUE_INFO && window.ESTOQUE_INFO.atualizadoEm) || "12/06/2026 14:22";
 document.getElementById('m-data').textContent = dataGer;
 document.getElementById('foot-data').textContent = 'Gerado em '+dataGer;
 document.getElementById('t-estoque').textContent = D.length;
