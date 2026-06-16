@@ -57,6 +57,7 @@ h2.sec .dot{width:9px;height:9px;border-radius:50%;background:var(--azul)}
 .kpi.clickable:hover .go{opacity:1}
 /* ALERT BLOCKS — empilha se não couber lado a lado */
 .alert-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,700px),1fr));gap:16px;margin-bottom:8px}
+#sail-panels{grid-template-columns:1fr}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;scroll-margin-top:70px}
 .panel-h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px}
 .panel-h .ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:16px}
@@ -127,6 +128,16 @@ tr.grp .grp-meta{color:var(--muted);font-size:11.5px;margin-left:8px}
 .mf .v{font-size:14px;font-weight:600;margin-top:1px}
 .mf.full{grid-column:1/-1}
 .mf.hl .v{color:var(--azul-light)}
+/* AÇÃO "sair de linha" no modal */
+.modal-act{padding:16px 22px 0;display:flex}
+.btn-sail{width:100%;padding:11px 14px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid var(--line);transition:.15s}
+.btn-sail.off{background:var(--amber-bg);color:var(--amber);border-color:rgba(255,186,92,.45)}
+.btn-sail.off:hover{background:rgba(255,186,92,.28)}
+.btn-sail.on{background:var(--green-bg);color:var(--green);border-color:rgba(74,217,145,.45)}
+.btn-sail.on:hover{background:rgba(74,217,145,.28)}
+.flag-sail{display:inline-block;margin-left:6px;font-size:10px;font-weight:700;color:var(--amber);background:var(--amber-bg);border-radius:20px;padding:1px 7px;vertical-align:middle;text-transform:uppercase;letter-spacing:.3px}
+.btn-tirar{border:1px solid var(--line);background:none;color:var(--muted);border-radius:7px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn-tirar:hover{border-color:var(--red);color:var(--red)}
 footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
 @media(max-width:640px){.modal-grid{grid-template-columns:1fr}.head-meta{margin-left:0;text-align:left;width:100%}}
 </style>
@@ -151,6 +162,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
   <button class="tab" data-v="estoque">Estoque <span class="pill" id="t-estoque">0</span></button>
   <button class="tab crit" data-v="compra">Atenção — Compra <span class="pill" id="t-compra">0</span></button>
   <button class="tab" data-v="venda">Atenção — Venda <span class="pill" id="t-venda">0</span></button>
+  <button class="tab" data-v="sail">Sair de linha <span class="pill" id="t-sail">0</span></button>
 </div></nav>
 
 <main>
@@ -192,16 +204,30 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
     <p class="sub">Onde sobra produto: estoque alto e itens de giro muito lento. Ordenado por marca.</p>
     <div class="alert-grid" id="venda-panels"></div>
   </section>
+
+  <!-- ============ SAIR DE LINHA ============ -->
+  <section class="view" id="v-sail">
+    <h2 class="sec"><span class="dot"></span>Produtos "vai sair de linha"</h2>
+    <p class="sub">Para marcar: clique num produto (na aba Estoque) e use o botão "Marcar como vai sair de linha". Aqui você acompanha os marcados que ainda têm estoque até zerarem — quando zerar, pode excluir do cadastro.</p>
+    <div class="toolbar">
+      <button class="btn" id="btn-export-sail">⬇ Exportar lista (para publicar/compartilhar)</button>
+      <span class="tag">As marcações ficam salvas neste navegador. Para o outro comprador ver, exporte e me envie para publicar.</span>
+    </div>
+    <div class="kpis" id="kpis-sail"></div>
+    <div class="alert-grid" id="sail-panels"></div>
+  </section>
 </main>
 
 <footer>M. Ferretti Distribuidora • Painel de Compras — dados da planilha ESTOQUE. <span id="foot-data"></span></footer>
 
 <div class="modal-bg" id="modal"><div class="modal">
   <div class="modal-h"><div><h3 id="md-desc"></h3><div class="code" id="md-code"></div></div><button class="x" onclick="closeModal()">×</button></div>
+  <div class="modal-act" id="md-act"></div>
   <div class="modal-grid" id="md-grid"></div>
 </div></div>
 
 <script src="dados/estoque.js"></script>
+<script src="dados/sair_de_linha.js"></script>
 <script>
 const D = (window.ESTOQUE||[]).filter(r=>r.produto);
 const GIRO_ALTO = 90;      // dias para considerar estoque alto
@@ -217,6 +243,24 @@ const byMarca = (metric)=> (a,b)=> a.nome.localeCompare(b.nome) || (metric? metr
 // venda em 30 dias = venda diária (qtde vendida / dias do período) × 30
 const vende30 = r => (r.qtdeVendidaDia||0)*30;
 D.forEach(r=>{ r.__v30 = Math.round(vende30(r)); });
+
+// ===== Classificação "vai sair de linha" (definida pelo usuário) =====
+// Base publicada (comum aos 2 compradores) + delta salvo neste navegador (localStorage).
+const _BASE = new Set(window.SAIR_DE_LINHA||[]);
+let _delta = {add:[],rem:[]};
+try{ _delta = JSON.parse(localStorage.getItem('saiLinhaDelta')) || _delta; }catch(e){}
+_delta.add=(_delta.add||[]).filter(c=>!_BASE.has(c));   // limpa o que já virou base
+_delta.rem=(_delta.rem||[]).filter(c=>_BASE.has(c));
+function _saveDelta(){ try{localStorage.setItem('saiLinhaDelta',JSON.stringify(_delta));}catch(e){} }
+_saveDelta();
+function isSaiLinha(code){ if(_delta.rem.includes(code))return false; if(_delta.add.includes(code))return true; return _BASE.has(code); }
+function setSaiLinha(code,on){
+  _delta.add=_delta.add.filter(c=>c!==code); _delta.rem=_delta.rem.filter(c=>c!==code);
+  const inBase=_BASE.has(code);
+  if(on && !inBase) _delta.add.push(code);
+  if(!on && inBase) _delta.rem.push(code);
+  _saveDelta();
+}
 
 // ---- classificadores ----
 const isZeradoLinha = r => r.bloqueado==='Em Uso' && r.saldoAtual<=0;
@@ -298,7 +342,7 @@ function statusBadge(r){
 }
 const COLS = [
   {k:'produto',t:'Código',cls:'code',ft:'text'},
-  {k:'descricao',t:'Produto',cls:'desc',ft:'text'},
+  {k:'descricao',t:'Produto',cls:'desc',ft:'text',render:r=>esc(r.descricao)+(isSaiLinha(r.produto)?' <span class="flag-sail">⚑ sai de linha</span>':'')},
   {k:'abc',t:'ABC',render:r=>abcBadge(r.abc),ft:'select',opts:['A','B','C','D']},
   {k:'saldoAtual',t:'Saldo (un)',num:1,render:r=>fmt(r.saldoAtual),ft:'min'},
   {k:'saldoAtualCx',t:'Saldo (cx)',num:1,render:r=>fmt1(r.saldoAtualCx),ft:'min'},
@@ -408,6 +452,48 @@ document.getElementById('venda-panels').innerHTML =
   buildPanel('pan-slow','🐌','amber','Pouca quantidade, mas muitos dias de estoque', slowMovers.slice().sort(byMarca(r=>r.giro))) +
   buildPanel('pan-curvaD','🛑','grey','Curva D com estoque alto (candidatos a reduzir)', curvaDalto.slice().sort(byMarca(r=>r.giro)));
 
+// ===== RELATÓRIO "SAIR DE LINHA" =====
+function saiPanel(id,icon,iccls,title,arr){
+  const cols=[cCode,cDesc,cAbc,cUn,cCx,cDias,cV30];
+  let body;
+  if(!arr.length){ body='<div class="empty">Nenhum produto aqui.</div>'; }
+  else {
+    const groups={}; arr.forEach(r=>{(groups[r.nome]=groups[r.nome]||[]).push(r);});
+    const names=Object.keys(groups).sort((a,b)=>a.localeCompare(b));
+    body='<table><thead><tr>'+cols.map(c=>`<th class="${c.num?'num':''}">${c.t}</th>`).join('')+'<th class="num">Ação</th></tr></thead><tbody>';
+    names.forEach(nm=>{
+      const g=groups[nm];
+      body+=`<tr class="grp"><td colspan="${cols.length+1}"><span class="grp-name">📦 ${esc(nm)}</span><span class="grp-meta">${g.length} ${g.length>1?'itens':'item'}</span></td></tr>`;
+      g.forEach(r=>{ body+='<tr>'+cols.map(c=>`<td class="${c.cls||''} ${c.num?'num':''}" onclick='openModal("${r.produto}")' style="cursor:pointer">${c.render(r)}</td>`).join('')+`<td class="num"><button class="btn-tirar" onclick='tirarSail("${r.produto}")'>✕ tirar</button></td></tr>`; });
+    });
+    body+='</tbody></table>';
+  }
+  return `<div class="panel" id="${id}"><div class="panel-h"><div class="ic ${iccls}">${icon}</div>${title}<span class="cnt ${iccls}">${arr.length}</span></div><div class="panel-b tall">${body}</div></div>`;
+}
+function renderSaiLinha(){
+  const flagged=D.filter(r=>isSaiLinha(r.produto));
+  const comEstoque=flagged.filter(r=>r.saldoAtual>0).sort(byMarca(r=>r.giro));
+  const zerados=flagged.filter(r=>r.saldoAtual<=0).sort(byMarca(r=>r.__v30));
+  document.getElementById('t-sail').textContent=flagged.length;
+  document.getElementById('kpis-sail').innerHTML=[
+    {lbl:'Marcados "vai sair de linha"',val:flagged.length},
+    {lbl:'AINDA com estoque',val:comEstoque.length,cls:'amber'},
+    {lbl:'Já zerados (pode excluir do cadastro)',val:zerados.length,cls:'green'},
+  ].map(c=>`<div class="kpi ${c.cls||''}"><div class="lbl">${c.lbl}</div><div class="val" style="font-size:26px">${c.val}</div></div>`).join('');
+  document.getElementById('sail-panels').innerHTML =
+    saiPanel('pan-sail-estoque','📦','amber','Vai sair de linha — AINDA com estoque (acompanhar até zerar)', comEstoque) +
+    saiPanel('pan-sail-zero','✅','green','Vai sair de linha — já zerados (pode excluir do cadastro)', zerados);
+}
+function tirarSail(code){ setSaiLinha(code,false); afterFlag(code); }
+function toggleSail(code){ setSaiLinha(code,!isSaiLinha(code)); afterFlag(code,true); }
+function afterFlag(code,reopen){ renderSaiLinha(); renderEstoque(); if(reopen) openModal(code); }
+document.getElementById('btn-export-sail').onclick=()=>{
+  const list=D.filter(r=>isSaiLinha(r.produto)).map(r=>r.produto);
+  const content='// Lista publicada de produtos "vai sair de linha" — gerada em '+dataGer+'\nwindow.SAIR_DE_LINHA = '+JSON.stringify(list)+';\n';
+  const blob=new Blob([content],{type:'text/javascript;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sair_de_linha.js';a.click();
+};
+
 // ===== MODAL =====
 const FIELDS=[
   ['Saldo atual (un)','saldoAtual','n','hl'],['Saldo atual (cx)','saldoAtualCx','n1','hl'],
@@ -429,6 +515,8 @@ function openModal(cod){
   const r=M[cod];if(!r)return;
   document.getElementById('md-desc').textContent=r.descricao;
   document.getElementById('md-code').innerHTML='<span class="code">'+esc(r.produto)+'</span> · '+esc(r.nome);
+  const sai=isSaiLinha(r.produto);
+  document.getElementById('md-act').innerHTML=`<button class="btn-sail ${sai?'on':'off'}" onclick='toggleSail("${r.produto}")'>${sai?'✓ Marcado como VAI SAIR DE LINHA — clique para tirar a marcação':'⚑ Marcar como "vai sair de linha"'}</button>`;
   document.getElementById('md-grid').innerHTML=FIELDS.map(f=>{
     let v=r[f[1]];const t=f[2];
     if(t==='m')v='R$ '+fmt1(v); else if(t==='n')v=fmt(v); else if(t==='n1')v=fmt1(v); else if(t==='d')v=dt(v); else v=esc(v||'—');
@@ -446,6 +534,7 @@ function show(v,noTop){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.v===v));
   document.querySelectorAll('.view').forEach(s=>s.classList.toggle('active',s.id==='v-'+v));
   if(v==='estoque') renderEstoque();
+  if(v==='sail') renderSaiLinha();
   if(!noTop) window.scrollTo({top:0,behavior:'smooth'});
 }
 function gotoPanel(tab,id){
@@ -454,6 +543,7 @@ function gotoPanel(tab,id){
 }
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>show(t.dataset.v));
 renderEstoque();
+renderSaiLinha();
 </script>
 </body>
 </html>
