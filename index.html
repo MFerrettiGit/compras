@@ -56,7 +56,7 @@ h2.sec .dot{width:9px;height:9px;border-radius:50%;background:var(--azul)}
 .kpi.clickable .go{position:absolute;right:14px;bottom:12px;font-size:11px;color:var(--azul-light);font-weight:700;opacity:0;transition:.15s}
 .kpi.clickable:hover .go{opacity:1}
 /* ALERT BLOCKS — empilha se não couber lado a lado */
-.alert-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,700px),1fr));gap:16px;margin-bottom:8px}
+.alert-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,820px),1fr));gap:16px;margin-bottom:8px}
 #sail-panels{grid-template-columns:1fr}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;scroll-margin-top:70px}
 .panel-h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px}
@@ -230,12 +230,12 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
 <script src="dados/sair_de_linha.js"></script>
 <script>
 const D = (window.ESTOQUE||[]).filter(r=>r.produto);
-const GIRO_ALTO = 90;      // dias para considerar estoque alto
+const GIRO_ALTO = 60;      // dias para considerar estoque alto
 const POUCA_CX  = 5;       // <= caixas = pouca quantidade física
 
 // ---- helpers ----
 const fmt = n => (n||0).toLocaleString('pt-BR',{maximumFractionDigits:0});
-const fmt1= n => (n||0).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
+const fmt1= n => Math.round(n||0).toLocaleString('pt-BR');   // arredonda (sem casas decimais)
 const dt = s => s? s.split('-').reverse().join('/') : '—';
 const esc = s => (''+(s??'')).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const abcBadge = a => `<span class="badge b-${a||'D'}">${a||'-'}</span>`;
@@ -326,7 +326,8 @@ const cUn   ={t:'Saldo (un)',num:1,render:r=>fmt(r.saldoAtual)};
 const cCx   ={t:'Saldo (cx)',num:1,render:r=>fmt1(r.saldoAtualCx)};
 const cDias ={t:'Saldo (dias)',num:1,render:r=>giroCell(r.giro)};
 const cV30  ={t:'Vende/30 dias',num:1,render:r=>fmt(r.__v30)};
-const PCOLS=[cCode,cDesc,cAbc,cUn,cCx,cDias,cV30];   // padrão dos painéis (marca vira cabeçalho de grupo)
+const cCheg ={t:'Chegando',num:1,render:r=>fmt(r.qtdeEntrada)};
+const PCOLS=[cCode,cDesc,cAbc,cUn,cCx,cDias,cV30,cCheg];   // padrão dos painéis (marca vira cabeçalho de grupo)
 
 // ===== ESTOQUE: tabela agrupada por marca =====
 const fSel=document.getElementById('f-forn');
@@ -454,7 +455,7 @@ document.getElementById('venda-panels').innerHTML =
 
 // ===== RELATÓRIO "SAIR DE LINHA" =====
 function saiPanel(id,icon,iccls,title,arr){
-  const cols=[cCode,cDesc,cAbc,cUn,cCx,cDias,cV30];
+  const cols=[cCode,cDesc,cAbc,cUn,cCx,cDias,cV30,cCheg];
   let body;
   if(!arr.length){ body='<div class="empty">Nenhum produto aqui.</div>'; }
   else {
