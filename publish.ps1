@@ -46,8 +46,33 @@ if(-not (Test-Path "$RepoDir\.git")){ git init | Out-Null; git branch -M main }
 git add -A
 $pendente = git status --porcelain
 if($pendente){ git commit -m $Message | Out-Null } else { Write-Output "Nada para commitar." }
-git push "https://$($Owner):$tok@github.com/$Owner/$Repo.git" main
-Write-Output ("PUSH_EXIT=" + $LASTEXITCODE)
+
+# Verificar se o GitHub Pages estÃ¡ livre antes de fazer push.
+$skipPush = $false
+try {
+  $allRuns = Invoke-RestMethod -Uri "https://api.github.com/repos/$Owner/$Repo/actions/runs?per_page=10" -Headers $hdr -ErrorAction Stop
+  $pRuns = @($allRuns.workflow_runs | Where-Object { $_.name -eq "pages build and deployment" })
+  $activeRun = $pRuns | Where-Object { $_.status -eq "in_progress" -or $_.status -eq "queued" } | Select-Object -First 1
+  if ($activeRun) {
+    Write-Output "Deployment ativo (status=$($activeRun.status)) â€” push adiado para a prÃ³xima execuÃ§Ã£o."
+    $skipPush = $true
+  } else {
+    $lastRun = $pRuns | Where-Object { $_.status -eq "completed" } | Select-Object -First 1
+    if ($lastRun -and $lastRun.conclusion -eq "failure") {
+      $updatedAt = [datetime]::Parse($lastRun.updated_at, $null, [System.Globalization.DateTimeStyles]::RoundtripKind)
+      $minAgo = [math]::Round(([datetime]::UtcNow - $updatedAt).TotalMinutes, 1)
+      if ($minAgo -lt 20) {
+        Write-Output "Ãšltimo deployment falhou hÃ¡ ${minAgo} min (Pages congestionado) â€” push adiado."
+        $skipPush = $true
+      }
+    }
+  }
+} catch { Write-Output "Aviso: nÃ£o foi possÃ­vel checar deployments ($($_.Exception.Message)) â€” prosseguindo com push." }
+
+if (-not $skipPush) {
+  git push "https://$($Owner):$tok@github.com/$Owner/$Repo.git" main
+  Write-Output ("PUSH_EXIT=" + $LASTEXITCODE)
+}
 
 # 3) Ativa GitHub Pages (branch main, raiz)
 try {
