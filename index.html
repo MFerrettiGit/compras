@@ -326,8 +326,9 @@ const cUn   ={t:'Saldo (un)',num:1,render:r=>fmt(r.saldoAtual)};
 const cCx   ={t:'Saldo (cx)',num:1,render:r=>fmt1(r.saldoAtualCx)};
 const cDias ={t:'Saldo (dias)',num:1,render:r=>giroCell(r.giro)};
 const cV30  ={t:'Vende/30 dias',num:1,render:r=>fmt(r.__v30)};
-const cCheg ={t:'Chegando',num:1,render:r=>fmt(r.qtdeEntrada)};
-const PCOLS=[cCode,cDesc,cAbc,cUn,cCx,cDias,cV30,cCheg];   // padrão dos painéis (marca vira cabeçalho de grupo)
+const cCheg  ={t:'Chegando',num:1,render:r=>fmt(r.qtdeEntrada)};
+const cSaindo={t:'Saindo',num:1,render:r=>fmt(r.qtdeEmPedidoVenda)};
+const PCOLS=[cCode,cDesc,cAbc,cUn,cCx,cDias,cV30,cCheg,cSaindo];   // padrão dos painéis (marca vira cabeçalho de grupo)
 
 // ===== ESTOQUE: tabela agrupada por marca =====
 const fSel=document.getElementById('f-forn');
@@ -350,6 +351,7 @@ const COLS = [
   {k:'giro',t:'Saldo (dias)',num:1,render:r=>giroCell(r.giro),ft:'min'},
   {k:'__v30',t:'Vende/30 dias',num:1,render:r=>fmt(r.__v30),ft:'min'},
   {k:'qtdeEntrada',t:'Chegando',num:1,render:r=>fmt(r.qtdeEntrada),ft:'temnao'},
+  {k:'qtdeEmPedidoVenda',t:'Saindo',num:1,render:r=>fmt(r.qtdeEmPedidoVenda),ft:'temnao'},
   {k:'status',t:'Situação',render:r=>statusBadge(r),ft:'sit'},
 ];
 const colByKey=Object.fromEntries(COLS.map(c=>[c.k,c]));
